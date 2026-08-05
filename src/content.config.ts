@@ -30,6 +30,8 @@ const articulos = defineCollection({
             'Open Source',
             'Hardware',
             'Ética',
+            'Desarrollo',     // <-- Añadida
+           'Data Science'    // <-- Añadida
           ])
         )
         .default([]),
