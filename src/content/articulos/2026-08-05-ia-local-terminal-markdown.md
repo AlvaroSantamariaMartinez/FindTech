@@ -6,9 +6,7 @@ imagenExterna: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1
 tags:
   - LLMs
   - Herramientas
-  - Desarrollo
   - Agentes
-  - Data Science
 destacado: true
 borrador: false
 ---
