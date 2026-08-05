@@ -10,7 +10,7 @@ export default defineConfig({
   // - Si el repo se llama "ai-radar" -> el sitio vive en /ai-radar (usa el `base` de abajo).
   // - Si el repo se llama "tu-usuario.github.io" -> borra la línea `base` y pon base: '/'.
   site: 'https://alvarosantamariamartinez.github.io/FindTech/',
-  base: '/FindTEch',
+  base: '/FindTech',
 
   integrations: [sitemap()],
 
