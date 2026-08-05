@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import readingTime from 'reading-time';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import RepoRadar from '../components/RepoRadar.astro';
+
+// Trae los artículos publicados (ignora borradores) y ordena por fecha desc.
+const articulos = (await getCollection('articulos', ({ data }) => !data.borrador)).sort(
+  (a, b) => b.data.fecha.getTime() - a.data.fecha.getTime()
+);
+
+// El Hero usa el artículo destacado más reciente; si no hay, el más reciente.
+const destacado = articulos.find((a) => a.data.destacado) ?? articulos[0];
+const resto = articulos.filter((a) => a.id !== destacado?.id);
+
+// Calcula el tiempo de lectura de cada artículo a partir de su cuerpo.
+const minutosPorId = new Map<string, number>();
+for (const a of articulos) {
+  const cuerpo = a.body ?? '';
+  minutosPorId.set(a.id, Math.max(1, Math.round(readingTime(cuerpo).minutes)));
+}
+---
+
+<BaseLayout titulo="AIRadar — Noticias de IA y radar de repositorios">
+  {destacado && <Hero articulo={destacado} />}
+
+  <section id="noticias" class="mx-auto max-w-6xl px-5 py-12">
+    <div class="mb-8">
+      <p class="eyebrow mb-2">ls -la ./noticias</p>
+      <h2 class="text-2xl font-bold text-ink sm:text-3xl">
+        Últimas <span class="text-gradient">noticias</span>
+      </h2>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {resto.map((a) => (
+        <ArticleCard articulo={a} minutos={minutosPorId.get(a.id) ?? 1} />
+      ))}
+    </div>
+
+    {resto.length === 0 && (
+      <p class="font-mono text-sm text-faint">
+        Aún no hay más artículos. Añade un .md en <code>src/content/articulos</code> para empezar.
+      </p>
+    )}
+  </section>
+
+  <RepoRadar />
+</BaseLayout>

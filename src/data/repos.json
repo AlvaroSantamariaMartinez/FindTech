@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1",
+    "nombre": "karpathy/nanochat",
+    "descripcion": "Repositorio mínimo para entrenar un LLM tipo ChatGPT desde cero, pensado para aprender los fundamentos.",
+    "lenguaje": "Python",
+    "estrellas": 24800,
+    "url": "https://github.com/karpathy/nanochat"
+  },
+  {
+    "id": "2",
+    "nombre": "firecrawl/firecrawl",
+    "descripcion": "Convierte cualquier web en datos limpios listos para LLM mediante una API de scraping y crawling.",
+    "lenguaje": "TypeScript",
+    "estrellas": 31200,
+    "url": "https://github.com/firecrawl/firecrawl"
+  },
+  {
+    "id": "3",
+    "nombre": "ollama/ollama",
+    "descripcion": "Ejecuta modelos de lenguaje de forma local con un único comando. Runtime ligero y multiplataforma.",
+    "lenguaje": "Go",
+    "estrellas": 98400,
+    "url": "https://github.com/ollama/ollama"
+  },
+  {
+    "id": "4",
+    "nombre": "langflow-ai/langflow",
+    "descripcion": "Constructor visual de flujos de agentes de IA mediante arrastrar y soltar. Sin necesidad de código.",
+    "lenguaje": "Python",
+    "estrellas": 45100,
+    "url": "https://github.com/langflow-ai/langflow"
+  },
+  {
+    "id": "5",
+    "nombre": "huggingface/candle",
+    "descripcion": "Framework minimalista de machine learning para Rust, con foco en rendimiento y despliegue.",
+    "lenguaje": "Rust",
+    "estrellas": 15600,
+    "url": "https://github.com/huggingface/candle"
+  },
+  {
+    "id": "6",
+    "nombre": "perplexity/bumblebee",
+    "descripcion": "Escáner de cadena de suministro open source que detecta dependencias maliciosas en npm, PyPI y más.",
+    "lenguaje": "Go",
+    "estrellas": 8900,
+    "url": "https://github.com/perplexity/bumblebee"
+  }
+]

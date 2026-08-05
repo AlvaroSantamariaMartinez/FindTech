@@ -1,0 +1,23 @@
+---
+interface Props {
+  nombre: string;
+}
+const { nombre } = Astro.props;
+
+// Color del acento por categoría. Todo lo demás cae en cian por defecto.
+const estilos: Record<string, string> = {
+  'LLMs': 'border-cyan/30 bg-cyan/10 text-cyan',
+  'Computer Vision': 'border-purple/30 bg-purple/10 text-purple-soft',
+  'Herramientas': 'border-term/30 bg-term/10 text-term',
+  'Investigación': 'border-purple/30 bg-purple/10 text-purple-soft',
+  'Agentes': 'border-cyan/30 bg-cyan/10 text-cyan',
+  'Open Source': 'border-term/30 bg-term/10 text-term',
+  'Hardware': 'border-cyan/30 bg-cyan/10 text-cyan',
+  'Ética': 'border-purple/30 bg-purple/10 text-purple-soft',
+};
+const clase = estilos[nombre] ?? 'border-cyan/30 bg-cyan/10 text-cyan';
+---
+
+<span class={`inline-flex items-center rounded-full border px-2.5 py-0.5 font-mono text-xs font-medium ${clase}`}>
+  {nombre}
+</span>

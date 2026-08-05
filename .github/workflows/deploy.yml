@@ -1,0 +1,45 @@
+name: Desplegar en GitHub Pages
+
+# Se ejecuta en cada push a main (por ejemplo, cuando subes un nuevo .md)
+# y también permite lanzarlo a mano desde la pestaña Actions.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos que necesita la acción oficial de Astro para publicar en Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Evita despliegues solapados: si subes dos artículos seguidos, el último gana.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Build con Astro
+        uses: withastro/action@v3
+        # La acción detecta el gestor de paquetes, instala dependencias,
+        # ejecuta `astro build` y sube el artefacto de /dist automáticamente.
+        # Si usas pnpm/yarn, descomenta y ajusta:
+        # with:
+        #   package-manager: pnpm@latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

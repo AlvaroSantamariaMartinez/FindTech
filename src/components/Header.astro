@@ -1,0 +1,28 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+
+<header class="sticky top-0 z-50 border-b border-[--color-hairline] bg-[rgba(8,9,13,0.72)] backdrop-blur-xl">
+  <nav class="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+    <a href={base} class="group flex items-center gap-2.5">
+      <span class="grid h-9 w-9 place-items-center rounded-lg border border-cyan/40 bg-cyan/10 font-mono text-lg font-bold text-cyan transition-colors group-hover:bg-cyan/20">
+        &gt;_
+      </span>
+      <span class="font-mono text-lg font-bold tracking-tight text-ink">
+        AI<span class="text-gradient">Radar</span>
+      </span>
+    </a>
+
+    <div class="flex items-center gap-6 font-mono text-sm text-muted">
+      <a href={base} class="transition-colors hover:text-cyan">Inicio</a>
+      <a href={`${base}#noticias`} class="transition-colors hover:text-cyan">Noticias</a>
+      <a href={`${base}#radar`} class="transition-colors hover:text-cyan">Radar</a>
+      <a
+        href={`${base}rss.xml`}
+        class="hidden rounded-md border border-[--color-hairline] px-3 py-1.5 text-purple-soft transition-colors hover:border-purple/50 hover:text-purple sm:inline-block"
+      >
+        RSS
+      </a>
+    </div>
+  </nav>
+</header>

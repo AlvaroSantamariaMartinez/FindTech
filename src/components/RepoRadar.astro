@@ -1,0 +1,39 @@
+---
+import RepoCard from './RepoCard.astro';
+import { getCollection } from 'astro:content';
+
+const repos = await getCollection('repos');
+// Ordena por estrellas descendente.
+repos.sort((a, b) => b.data.estrellas - a.data.estrellas);
+---
+
+<section id="radar" class="mx-auto max-w-6xl px-5 py-16">
+  <div class="mb-8 flex items-end justify-between">
+    <div>
+      <p class="eyebrow mb-2">git_radar --new --lang=ai</p>
+      <h2 class="text-2xl font-bold text-ink sm:text-3xl">
+        Radar de <span class="text-gradient">repositorios</span>
+      </h2>
+    </div>
+    <a
+      href="https://github.com/trending"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="hidden font-mono text-sm text-purple-soft transition-colors hover:text-purple sm:block"
+    >
+      Ver trending →
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {repos.map((r) => (
+      <RepoCard
+        nombre={r.data.nombre}
+        descripcion={r.data.descripcion}
+        lenguaje={r.data.lenguaje}
+        estrellas={r.data.estrellas}
+        url={r.data.url}
+      />
+    ))}
+  </div>
+</section>
