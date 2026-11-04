@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="es" data-version="2.53.4">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MRAnalyzer</title>
+
+  <!-- Reveal.js (copia local: funciona sin internet) -->
+  <link rel="stylesheet" href="vendor/reset.css">
+  <link rel="stylesheet" href="vendor/reveal.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="fondo-degradado"></div>
+  <canvas id="escena3d" aria-label="Holograma 3D de anatomía real generada por MRAnalyzer"></canvas>
+
+  <!-- HUD fijo -->
+  <div class="hud" aria-hidden="true">
+    <div class="esquina si"></div><div class="esquina sd"></div><div class="esquina ii"></div><div class="esquina id"></div>
+    <div class="barra-sup">
+      <span>MRANALYZER // NÚCLEO DE ANÁLISIS <span class="ambar">v<span data-dato="version">2.53.4</span></span></span>
+      <span id="hud-modo">MOTOR LOCAL · DATOS EN EL EQUIPO</span>
+      <span id="hud-reloj">00:00:00</span>
+    </div>
+    <div class="reticula" id="hud-reticula">
+      <svg viewBox="0 0 200 200">
+        <circle cx="100" cy="100" r="97" fill="none" stroke="#38e8ff" stroke-opacity=".35" stroke-width=".4"/>
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#38e8ff" stroke-opacity=".5" stroke-width=".8" stroke-dasharray="2 6"/>
+        <g class="lento"><path d="M100 4 A96 96 0 0 1 180 48" fill="none" stroke="#ffb547" stroke-width="1.2"/>
+        <path d="M100 196 A96 96 0 0 1 20 152" fill="none" stroke="#38e8ff" stroke-width="1.2"/></g>
+        <path d="M100 0v10M100 190v10M0 100h10M190 100h10" stroke="#38e8ff" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="registro" id="hud-registro"></div>
+    <div class="barra-inf">
+      <span id="hud-seccion">01 / 09</span>
+      <div class="segmentos" id="hud-segmentos"></div>
+      <span id="hud-etiqueta">ARRANQUE</span>
+    </div>
+  </div>
+  <div class="capa-lineas"></div><div class="capa-vineta"></div><div class="destello" id="destello"></div>
+  <div class="arranque" id="arranque"><pre id="arranque-texto"></pre></div>
+
+  <div class="reveal">
+    <div class="slides">
+
+      <section id="portada">
+        <div class="columna" style="width: 900px; margin-top: 150px;">
+          <p class="ceja aparece" style="--i:0">Imagen médica · IA · 3D · Realidad extendida</p>
+          <h1 class="aparece zoom" style="--i:1; font-size: 92pt;" data-descifrar>MRAnalyzer</h1>
+          <p class="aparece text-3xl" style="--i:2; color:#bfefff;">De la resonancia y el TAC a una anatomía que se <strong>imprime</strong>, se <strong>recorre en realidad virtual</strong> y se <strong>superpone</strong> en realidad aumentada.</p>
+          <div class="aparece" style="--i:3; display:flex; gap:40px; margin-top: 40px;">
+            <div class="panel" style="padding: 18px 28px;"><p class="etiqueta">Presenta</p><p class="text-xl"><strong>[Nombre y apellidos]</strong></p></div>
+            <div class="panel ambar" style="padding: 18px 28px;"><p class="etiqueta">Centro · Tutor/a</p><p class="text-xl">[Centro] · [Tutor/a]</p></div>
+          </div>
+        </div>
+        <aside class="notes">(≈25 s) Buenos días. Soy [nombre] y les presento MRAnalyzer: una aplicación que convierte una resonancia magnética o un TAC en modelos 3D de los órganos, de las lesiones y de los huesos del paciente. Lo que ven detrás no es un vídeo: es un tórax real, segmentado por la propia aplicación a partir de un TAC público, en tiempo real. Esos modelos se imprimen, se exploran en realidad virtual entre varias personas y se superponen en realidad aumentada. Y todo funciona en un ordenador del propio hospital, sin enviar datos fuera.</aside>
+      </section>
+
+      <section id="problema">
+        <div class="columna" style="width: 840px;">
+          <p class="ceja aparece" style="--i:0">01 · El problema</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>Cientos de cortes en gris</h2>
+          <p class="aparece text-2xl" style="--i:2; color:#bfefff;">Para operar o explicar una lesión hace falta la anatomía en 3D. Hoy eso es trabajo manual de especialista.</p>
+          <div class="panel aparece izq" style="--i:3"><h3>Segmentar es lento</h3><p>Delimitar órgano a órgano, corte a corte, con herramientas que exigen formación.</p></div>
+          <div class="panel aparece izq" style="--i:4"><h3>Herramientas dispersas</h3><p>Visor, segmentación, mallas, impresora y realidad virtual van por separado.</p></div>
+          <div class="panel ambar aparece izq" style="--i:5"><h3 class="ambar">Datos sensibles</h3><p>Las imágenes de pacientes no deberían salir del centro para procesarse.</p></div>
+        </div>
+        <aside class="notes">(≈30 s) El punto de partida: un estudio de imagen son cientos de cortes en escala de grises, como esta pila de un TAC real. Para planificar una cirugía o explicársela a un paciente hace falta la anatomía en tres dimensiones, y obtenerla hoy significa segmentar a mano, estructura a estructura, con herramientas especializadas. Además, visor, segmentación, impresión 3D y realidad virtual están en programas distintos. Y hay una restricción que no se negocia: los datos de pacientes no deben salir del centro.</aside>
+      </section>
+
+      <section id="solucion">
+        <div class="columna" style="width: 900px;">
+          <p class="ceja aparece" style="--i:0">02 · La solución</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>Un flujo automático</h2>
+          <p class="aparece text-2xl" style="--i:2; color:#bfefff;">Del archivo DICOM al modelo 3D, sin que el usuario sepa de segmentación.</p>
+          <div class="flujo aparece" style="--i:3; flex-direction: column; gap: 14px;">
+            <div class="panel paso"><p class="etiqueta">01 · Entrada</p><p class="text-xl"><strong>Estudio DICOM</strong> — RM, TAC o radiografía, anonimizado</p></div>
+            <div class="panel paso"><p class="etiqueta">02 · Inteligencia artificial</p><p class="text-xl"><strong>Segmentación</strong> — órganos, huesos, vasos, tejidos y hallazgos</p></div>
+            <div class="panel paso"><p class="etiqueta">03 · Geometría</p><p class="text-xl"><strong>Mallas 3D</strong> lisas, cerradas y fieles al borde real</p></div>
+            <div class="panel ambar paso"><p class="etiqueta">04 · Salida</p><p class="text-xl"><strong class="ambar">Impresión · RV · RA · informe</strong></p></div>
+          </div>
+        </div>
+        <aside class="notes">(≈35 s) MRAnalyzer reúne todo en un solo flujo, y es lo que está pasando detrás: los cortes se funden y el plano de escaneo reconstruye la anatomía. Se importa el estudio DICOM, que se anonimiza. Las redes neuronales reconocen órganos, huesos, vasos y tejidos, y se buscan zonas que se salen de lo normal. Después se generan mallas 3D lisas y cerradas, fieles al borde real de la imagen, listas para imprimir, explorar en realidad virtual o superponer en realidad aumentada. Cada parámetro se ajusta solo a la imagen y la decisión queda explicada en el informe.</aside>
+      </section>
+
+      <section id="arquitectura">
+        <div class="columna" style="width: 820px;">
+          <p class="ceja aparece" style="--i:0">03 · Arquitectura</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>Tres capas, un motor local</h2>
+          <div class="panel aparece izq" style="--i:2"><p class="etiqueta">Motor · Python · <span data-dato="lineas_python">≈ 37 000</span> líneas</p><h3>Análisis</h3><p>SimpleITK, SciPy, PyTorch, scikit-image y trimesh. En GPU NVIDIA si la hay.</p></div>
+          <div class="panel aparece izq" style="--i:3"><p class="etiqueta">Interfaz · Web · <span data-dato="lineas_js">≈ 14 000</span> líneas</p><h3>Visor, editor y sala RV</h3><p>Three.js y WebXR: visor 3D y de cortes, editor de segmentaciones y laboratorio virtual.</p></div>
+          <div class="panel ambar aparece izq" style="--i:4"><p class="etiqueta">Gafas · Unity / C#</p><h3 class="ambar">App de Meta Quest 3</h3><p>Realidad aumentada nativa, emparejada con el PC.</p></div>
+          <p class="aparece etiqueta" style="--i:5; line-height:1.7;">Redes: TotalSegmentator (<span data-dato="estructuras_tac">117</span> estructuras en TAC) · SynthSeg · HD&#8209;BET · MRSegmentator · nnInteractive · UNet++ para tumores</p>
+        </div>
+        <aside class="notes">(≈35 s) Técnicamente son tres capas. Un motor en Python, de unas <span data-dato="lineas_python">≈ 37 000</span> líneas, que hace el análisis con SimpleITK, SciPy y PyTorch, y usa la tarjeta gráfica cuando la hay. Una interfaz web con visor 3D, visor de cortes, editor y una sala de realidad virtual hecha con Three.js y WebXR, la misma tecnología que mueve esta presentación. Y una app nativa para Meta Quest 3, en Unity, para la realidad aumentada. Sobre ese motor integro redes de referencia: TotalSegmentator, que reconoce <span data-dato="estructuras_tac">117</span> estructuras en un TAC, SynthSeg, HD-BET, MRSegmentator, nnInteractive y una UNet++ para tumores cerebrales.</aside>
+      </section>
+
+      <section id="ia">
+        <div class="columna" style="width: 820px;">
+          <p class="ceja aparece" style="--i:0">04 · IA con controles</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>La red propone, la anatomía comprueba</h2>
+          <div class="visor aparece zoom" style="--i:2"><img src="assets/vasos.png" alt="Tres cortes de un TAC de tórax con arterias pulmonares en rojo y venas en azul segmentadas automáticamente"></div>
+          <div class="leyenda aparece" style="--i:3"><p><span class="punto" style="background:#ff3b4e"></span>Arterias pulmonares</p><p><span class="punto" style="background:#4d8bff"></span>Venas pulmonares</p><p><span class="punto" style="background:#9ff6ff"></span>Vía aérea</p></div>
+          <ul class="datos aparece" style="--i:4">
+            <li><strong>Reglas anatómicas:</strong> un vaso pulmonar solo vale dentro del pulmón</li>
+            <li><strong>Segunda opinión:</strong> dos redes compiten; gana el contorno que sigue el borde real</li>
+            <li><strong>Pesos verificados</strong> por SHA-256 y cargados en modo seguro</li>
+          </ul>
+        </div>
+        <aside class="notes">(≈35 s) La inteligencia artificial no se acepta a ciegas. Detrás, el holograma aísla el árbol vascular del pulmón: arterias en rojo, venas en azul, separadas automáticamente; y a la izquierda, los mismos vasos sobre los cortes del TAC. Sobre lo que propone la red aplico controles: reglas anatómicas, como que un vaso pulmonar solo puede estar dentro del pulmón; en resonancias de cuerpo, una segunda red da una segunda opinión y, órgano a órgano, gana el contorno que mejor sigue el borde de la imagen; y los pesos de cada red se verifican por su huella criptográfica antes de cargarlos.</aside>
+      </section>
+
+      <section id="impresion">
+        <div class="columna" style="width: 820px;">
+          <p class="ceja aparece" style="--i:0">05 · Impresión 3D</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>Del estudio a la mano</h2>
+          <ul class="datos aparece" style="--i:2">
+            <li>Mallas <strong>cerradas</strong>, sin escalones y con el volumen de la segmentación</li>
+            <li><strong>Corte automático</strong> por la sección más ancha, con taladros de unión</li>
+            <li>Peso de material por pieza · STL, 3MF e informe PDF</li>
+          </ul>
+          <div class="aparece" style="--i:3; display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 10px;">
+            <div class="panel ambar"><p class="cifra" data-dato="piezas_cerebro" data-hasta="3">0</p><p class="etiqueta">piezas</p></div>
+            <div class="panel"><p class="cifra cian" data-dato="altura_cerebro_mm" data-hasta="134" data-suf=" mm">0</p><p class="etiqueta">de altura</p></div>
+            <div class="panel"><p class="cifra cian" data-dato="pla_kg" data-hasta="1.3" data-dec="1" data-suf=" kg">0</p><p class="etiqueta">de PLA</p></div>
+          </div>
+          <p class="aparece etiqueta" style="--i:4">Ejemplo real: cerebro de una RM T1 · análisis completo en <span data-dato="minutos_cerebro">5–7</span> minutos</p>
+        </div>
+        <aside class="notes">(≈30 s) El resultado se puede llevar a la mano. Lo que ven girando es un cerebro procesado por la aplicación y dividido en las tres piezas que se mandan a la impresora: se separan y se vuelven a juntar como en el montaje real. Las mallas salen cerradas, sin el escalonado de los vóxeles y conservando el volumen. Si la pieza no cabe, se corta por la sección más ancha y se añaden taladros para unirla. En un caso real, un cerebro de 134 milímetros salió en tres piezas, unos 1,3 kilos de PLA, con un análisis de cinco a siete minutos.</aside>
+      </section>
+
+      <section id="xr">
+        <p class="ceja aparece" style="--i:0">06 · Realidad virtual y aumentada</p>
+        <h2 class="aparece" style="--i:1; width: 1100px;" data-descifrar>Anatomía a escala real, compartida</h2>
+        <div class="panel aparece izq" style="--i:2; position:absolute; left:120px; bottom:150px; width: 560px;">
+          <p class="etiqueta">Realidad virtual · WebXR</p><h3>Laboratorio compartido</h3>
+          <p>Varias personas en la misma sala, con Meta Quest 3 o SteamVR, sin instalar nada en las gafas.</p>
+        </div>
+        <div class="panel ambar aparece" style="--i:3; position:absolute; right:120px; bottom:150px; width: 560px;">
+          <p class="etiqueta">Realidad aumentada · Unity</p><h3 class="ambar">Sobre el modelo impreso</h3>
+          <p>Una red de detección propia, entrenada con imágenes sintéticas, localiza la pieza y le superpone la anatomía.</p>
+        </div>
+        <div class="aparece zoom" style="--i:4; position:absolute; right:120px; top:200px; text-align:right;">
+          <p class="cifra cian" data-dato="fps_quest" data-hasta="87" style="font-size:80pt !important;">0</p><p class="etiqueta">imágenes/s en Quest 3 · objetivo 90</p>
+        </div>
+        <aside class="notes">(≈35 s) Además de imprimir, el modelo se explora en realidad virtual. La sala se sirve desde el propio ordenador por WebXR, así que funciona en Meta Quest 3 o en SteamVR sin instalar nada en las gafas, y varias personas comparten la misma sala: los conos que orbitan representan a cada participante. En la Quest 3 medimos hasta <span data-dato="fps_quest">87</span> imágenes por segundo de las 90 que piden las gafas. Y en realidad aumentada, una app nativa detecta la pieza impresa con una red entrenada con imágenes sintéticas y le superpone los órganos y las lesiones.</aside>
+      </section>
+
+      <section id="ingenieria">
+        <div style="position:absolute; right:120px; top:110px; width: 900px; display:flex; flex-direction:column; gap: 26px;">
+          <p class="ceja aparece" style="--i:0">07 · Ingeniería</p>
+          <h2 class="aparece" style="--i:1" data-descifrar>Hecho para un hospital</h2>
+          <div class="aparece" style="--i:2; display:grid; grid-template-columns: 1fr 1fr; gap: 22px;">
+            <div class="panel"><p class="cifra cian" data-hasta="100" data-suf=" %">0</p><p class="text-lg">local: las imágenes nunca salen del equipo</p></div>
+            <div class="panel"><p class="cifra cian" data-dato="pruebas_ok" data-hasta="177">0</p><p class="text-lg">pruebas automáticas en cada versión</p></div>
+            <div class="panel"><p class="cifra cian" data-hasta="2" data-suf=" claves">0</p><p class="text-lg">firman cada actualización; el instalador las comprueba</p></div>
+            <div class="panel ambar"><p class="cifra" data-dato="hallazgos_x" data-hasta="3" data-suf="×">0</p><p class="text-lg">más rápida la búsqueda de hallazgos en un TAC de 70 cm, mismo resultado</p></div>
+          </div>
+        </div>
+        <aside class="notes">(≈30 s) Se ha construido para usarse en un entorno clínico real. Todo el procesamiento es local: las imágenes no salen del equipo. Hay <span data-dato="pruebas_ok">177</span> pruebas automáticas que se pasan en cada versión. Las actualizaciones van firmadas con dos claves y el instalador comprueba la firma antes de instalar. Y se optimiza midiendo: en la última versión, con un TAC de 70 centímetros y más de cien estructuras, la búsqueda de hallazgos es tres veces más rápida, comprobando que el resultado es idéntico.</aside>
+      </section>
+
+      <section id="cierre">
+        <div style="position:absolute; left:0; right:0; bottom:90px; padding: 40px 0 34px; text-align:center; display:flex; flex-direction:column; align-items:center; gap: 20px; background: linear-gradient(180deg, rgba(3,7,13,0) 0%, rgba(3,7,13,.88) 22%, rgba(3,7,13,.92) 100%);">
+          <h2 class="aparece zoom" style="--i:1; font-size: 40pt; white-space: nowrap;" data-descifrar>De cortes en gris a anatomía que se toca</h2>
+          <p class="aparece text-2xl" style="--i:2; color:#bfefff; width: 1300px;">En minutos y sin salir del hospital. Próximo paso: validación con <strong>[servicio / hospital]</strong> frente a la segmentación manual de expertos.</p>
+          <h1 class="aparece zoom" style="--i:4; font-size: 54pt; color: var(--secondary-color); text-shadow: 0 0 30px rgba(255,181,71,.7);">Gracias</h1>
+        </div>
+        <aside class="notes">(≈25 s) En resumen: MRAnalyzer convierte cientos de cortes en gris en una anatomía que se puede tocar, recorrer y compartir, en minutos y sin que los datos salgan del hospital. El siguiente paso es validarlo con [servicio u hospital] y medir su precisión frente a la segmentación manual de expertos. Muchas gracias; quedo a su disposición para las preguntas.</aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="vendor/reveal.js"></script>
+  <script src="vendor/notes.js"></script>
+  <script type="module" src="hud.js"></script>
+</body>
+</html>

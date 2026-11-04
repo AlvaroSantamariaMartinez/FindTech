@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+/* Dosier A4: misma identidad que la presentación (cian holográfico y ámbar), en páginas claras para leer e imprimir. */
+:root {
+  --oscuro: #04121c; --tinta: #14232d; --suave: #4b6270; --linea: #cfe0e6; --papel: #f6f9fa;
+  --cian: #0aa6c2; --cian-claro: #38e8ff; --ambar: #d98a12; --ambar-claro: #ffb547;
+  --titulo: "Orbitron", "Arial Black", sans-serif; --texto: "Rajdhani", "Arial Narrow", Arial, sans-serif; --mono: "Share Tech Mono", monospace;
+}
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #555; }
+body { font-family: var(--texto); color: var(--tinta); font-size: 11.5pt; line-height: 1.38; }
+.pagina { width: 210mm; height: 297mm; padding: 16mm 17mm 18mm; margin: 0 auto 8mm; background: var(--papel); position: relative;
+  overflow: hidden; page-break-after: always; display: flex; flex-direction: column; gap: 4.5mm; }
+@media print { html, body { background: none; } .pagina { margin: 0; } }
+
+header .seccion { font-family: var(--mono); font-size: 9pt; letter-spacing: 0.3em; text-transform: uppercase; color: var(--cian); margin: 0;
+  border-bottom: 1px solid var(--linea); padding-bottom: 2.5mm; }
+header .seccion::before { content: "▮ "; color: var(--ambar); }
+h1, h2, h3 { margin: 0; }
+h2 { font-family: var(--titulo); font-weight: 800; font-size: 20pt; text-transform: uppercase; letter-spacing: 0.03em; color: var(--oscuro); line-height: 1.15; }
+h3 { font-size: 13pt; font-weight: 700; color: var(--cian); }
+h3.sub { font-family: var(--mono); font-size: 9.5pt; letter-spacing: 0.22em; text-transform: uppercase; color: var(--suave); margin-top: 2mm; }
+p { margin: 0; }
+b { color: var(--oscuro); }
+.entrada { font-size: 13.5pt; line-height: 1.42; }
+.etq { font-family: var(--mono); font-size: 8pt; letter-spacing: 0.2em; text-transform: uppercase; color: var(--suave); }
+.nota { font-size: 9pt; color: var(--suave); font-style: italic; }
+
+.tarjeta { background: #fff; border: 1px solid var(--linea); border-top: 3px solid var(--cian); padding: 4mm 4.5mm; display: flex; flex-direction: column; gap: 1.5mm; }
+.tarjeta.ambar { border-top-color: var(--ambar); }
+.tarjeta.ambar h3 { color: var(--ambar); }
+.rejilla-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.rejilla-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm; }
+.dos { display: grid; grid-template-columns: 1.15fr 1fr; gap: 6mm; align-items: center; }
+
+.cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin-top: auto; background: var(--oscuro); color: #cfeef6; padding: 6mm; }
+.cifras p { font-size: 10pt; }
+.cifras .num { font-family: var(--titulo); font-weight: 800; font-size: 22pt; color: var(--cian-claro); margin-bottom: 1.5mm; }
+.num-m { font-family: var(--titulo); font-weight: 800; font-size: 17pt; color: var(--oscuro); }
+.num-g { font-family: var(--titulo); font-weight: 800; font-size: 26pt; color: var(--ambar); }
+
+.lista { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2.2mm; }
+.lista li { padding-left: 6mm; position: relative; }
+.lista li::before { content: ""; position: absolute; left: 0; top: 2mm; width: 2.4mm; height: 2.4mm; border: 1.5px solid var(--cian); transform: rotate(45deg); }
+
+.tabla { width: 100%; border-collapse: collapse; font-size: 10.5pt; background: #fff; }
+.tabla th { text-align: left; background: var(--oscuro); color: #e6fbff; font-weight: 600; padding: 2mm 3mm; font-size: 9.5pt; }
+.tabla td { border-bottom: 1px solid var(--linea); padding: 2mm 3mm; vertical-align: top; }
+
+.render { width: 100%; height: 62mm; object-fit: cover; background: #03070d; border: 1px solid var(--linea); }
+.flujo { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.flujo > div { background: var(--oscuro); color: #cfeef6; padding: 3.5mm 4mm; border-right: 1px solid #1e3a48; }
+.flujo > div b { color: var(--cian-claro); }
+.flujo > div.ambar b { color: var(--ambar-claro); }
+.flujo .etq { color: #7fb2c1; margin-bottom: 1mm; }
+.galeria { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+.galeria figure { margin: 0; display: flex; flex-direction: column; gap: 1.5mm; }
+.galeria img { width: 100%; height: 66mm; object-fit: cover; background: #03070d; border: 1px solid var(--linea); }
+.galeria figcaption { font-size: 9.5pt; color: var(--suave); }
+
+.hoja { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 3px solid var(--cian); }
+.hoja > div { padding: 3mm 3mm 0 0; position: relative; }
+.hoja > div::before { content: ""; position: absolute; top: -5px; left: 0; width: 7px; height: 7px; background: var(--ambar); border-radius: 50%; }
+.hoja .etq { margin: 2mm 0 1mm; }
+
+.ronda { display: grid; grid-template-columns: 1fr 1.2fr; gap: 6mm; align-items: start; }
+.importe { background: var(--oscuro); color: #cfeef6; padding: 6mm; display: flex; flex-direction: column; gap: 2mm; }
+.importe .etq { color: #7fb2c1; }
+.contacto { margin-top: auto; text-align: center; border-top: 1px solid var(--linea); padding-top: 5mm; display: flex; flex-direction: column; gap: 1.5mm; }
+
+footer { position: absolute; left: 17mm; right: 17mm; bottom: 8mm; display: flex; justify-content: space-between; font-family: var(--mono);
+  font-size: 8pt; letter-spacing: 0.15em; color: var(--suave); text-transform: uppercase; }
+
+/* portada */
+.portada { padding: 0; background: #03070d; color: #e6fbff; }
+.portada .fondo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 72% 50%; }
+.portada .velo { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(3,7,13,.25) 0%, rgba(3,7,13,.15) 40%, rgba(3,7,13,.92) 72%, #03070d 100%); }
+.portada .contenido { position: absolute; left: 17mm; right: 17mm; bottom: 20mm; display: flex; flex-direction: column; gap: 5mm; }
+.portada .ceja { font-family: var(--mono); font-size: 10pt; letter-spacing: 0.3em; text-transform: uppercase; color: var(--cian-claro); }
+.portada h1 { font-family: var(--titulo); font-weight: 800; font-size: 44pt; letter-spacing: 0.04em; text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(56, 232, 255, .6); }
+.portada .lema { font-size: 15pt; line-height: 1.4; color: #bfefff; max-width: 160mm; }
+.pie-portada { display: flex; gap: 10mm; border-top: 1px solid rgba(56, 232, 255, .4); padding-top: 4mm; font-size: 11pt; }
+.pie-portada .etq { color: #7fb2c1; margin-right: 2mm; }

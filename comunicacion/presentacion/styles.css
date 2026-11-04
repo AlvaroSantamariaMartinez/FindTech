@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+/* ============================================================
+   MRAnalyzer · interfaz holográfica de diagnóstico
+   Fondo negro azulado, cian holográfico dominante, ámbar para cifras y alertas.
+   ============================================================ */
+:root {
+  --background-color: #03070d;
+  --heading-font: "Orbitron", "Arial Black", sans-serif;
+  --body-font: "Rajdhani", "Arial Narrow", Arial, sans-serif;
+  --mono-font: "Share Tech Mono", "Courier New", monospace;
+  --base-font-size: 32px;
+  --text-size: 20pt;
+  --h1-size: 66pt;
+  --h2-size: 40pt;
+  --h3-size: 20pt;
+
+  --primary-color: #38e8ff;      /* cian holográfico */
+  --secondary-color: #ffb547;    /* ámbar */
+  --danger-color: #ff3b4e;
+  --vein-color: #4d8bff;
+  --text-color: #e6fbff;
+  --muted-color: #8fb8c4;
+  --panel: rgba(4, 22, 34, 0.55);
+  --line: rgba(56, 232, 255, 0.45);
+}
+
+html, body { background: var(--background-color); }
+body { overflow: hidden; }
+
+/* ---------- lienzo 3D detrás de todo ---------- */
+#escena3d { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 0; display: block; }
+.fondo-degradado { position: fixed; inset: 0; z-index: -1;
+  background: radial-gradient(ellipse at 60% 45%, #0b2533 0%, #03070d 62%); }
+
+.reveal { font-family: var(--body-font); font-size: var(--base-font-size); color: var(--text-color); z-index: 2; }
+.reveal-viewport { background: transparent !important; }
+.reveal .slides section { padding: 110px 120px 120px; text-align: left; height: 100%; box-sizing: border-box; }
+.reveal .slides > section { pointer-events: none; }
+.reveal .slides > section.present { pointer-events: auto; }
+
+.reveal h1, .reveal h2, .reveal h3 {
+  font-family: var(--heading-font); text-transform: uppercase; color: var(--text-color);
+  letter-spacing: 0.04em; margin: 0; line-height: 1.08;
+  text-shadow: 0 0 18px rgba(56, 232, 255, 0.55), 0 0 2px rgba(56, 232, 255, 0.9);
+}
+.reveal h1 { font-size: var(--h1-size); font-weight: 900; }
+.reveal h2 { font-size: var(--h2-size); font-weight: 700; }
+.reveal h3 { font-size: var(--h3-size); font-weight: 700; color: var(--primary-color); letter-spacing: 0.08em; }
+.reveal p, .reveal li { font-size: var(--text-size); color: var(--text-color); line-height: 1.35; margin: 0; font-weight: 500; }
+.reveal strong { color: var(--primary-color); font-weight: 700; }
+.reveal .ambar { color: var(--secondary-color); }
+.reveal .rojo { color: var(--danger-color); }
+.reveal .azul { color: var(--vein-color); }
+
+.text-lg { font-size: 22pt !important; } .text-xl { font-size: 24pt !important; }
+.text-2xl { font-size: 28pt !important; } .text-3xl { font-size: 32pt !important; }
+.text-muted { color: var(--muted-color) !important; } .text-center { text-align: center; }
+
+/* ---------- piezas del HUD dentro de las diapositivas ---------- */
+.reveal .ceja { font-family: var(--mono-font); font-size: 15pt; color: var(--primary-color); letter-spacing: 0.32em;
+  text-transform: uppercase; margin-bottom: 22px; }
+.reveal .ceja::before { content: "▮ "; color: var(--secondary-color); animation: parpadeo 1s steps(2) infinite; }
+.reveal .columna { width: 860px; display: flex; flex-direction: column; gap: 26px; }
+
+.panel { position: relative; background: var(--panel); border: 1px solid var(--line); padding: 26px 30px;
+  backdrop-filter: blur(6px);
+  clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 26px, 100% 100%, 26px 100%, 0 calc(100% - 26px));
+  box-shadow: inset 0 0 40px rgba(56, 232, 255, 0.08); }
+.panel::before { content: ""; position: absolute; left: 0; top: 0; width: 70px; height: 3px; background: var(--primary-color);
+  box-shadow: 0 0 12px var(--primary-color); }
+.panel.ambar { border-color: rgba(255, 181, 71, 0.55); }
+.panel.ambar::before { background: var(--secondary-color); box-shadow: 0 0 12px var(--secondary-color); }
+.panel h3 { margin-bottom: 10px; }
+.panel p { font-size: 19pt; color: #cfeef6; }
+
+.etiqueta { font-family: var(--mono-font); font-size: 13pt !important; color: var(--muted-color) !important; letter-spacing: 0.18em;
+  text-transform: uppercase; }
+
+/* cifras grandes */
+.cifra { font-family: var(--heading-font) !important; font-weight: 900; font-size: 48pt !important; line-height: 1.05 !important; white-space: nowrap;
+  color: var(--secondary-color) !important; text-shadow: 0 0 22px rgba(255, 181, 71, 0.6); }
+.cifra.cian { color: var(--primary-color) !important; text-shadow: 0 0 22px rgba(56, 232, 255, 0.6); }
+
+/* flujo de la solución */
+.flujo { display: flex; align-items: stretch; gap: 0; }
+.flujo .paso { flex: 1; }
+.flujo .flecha { width: 46px; display: flex; align-items: center; justify-content: center; }
+.flujo .flecha::after { content: ""; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent); background-size: 200% 100%;
+  animation: corriente 1.2s linear infinite; }
+
+/* telemetría de lista */
+.reveal ul.datos { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.reveal ul.datos li { font-size: 20pt; padding-left: 34px; position: relative; }
+.reveal ul.datos li::before { content: ""; position: absolute; left: 0; top: 13px; width: 16px; height: 16px;
+  border: 2px solid var(--primary-color); transform: rotate(45deg); box-shadow: 0 0 8px var(--primary-color); }
+
+/* imagen con marco de escáner */
+.visor { position: relative; border: 1px solid var(--line); padding: 8px; background: rgba(0, 0, 0, 0.6); overflow: hidden; }
+.visor img { display: block; width: 100%; height: auto; margin: 0; }
+.visor::after { content: ""; position: absolute; left: 0; right: 0; height: 80px; top: -80px;
+  background: linear-gradient(180deg, transparent, rgba(56, 232, 255, 0.35), transparent); animation: barrido 2.6s linear infinite; }
+
+.leyenda { display: flex; gap: 26px; }
+.leyenda p { font-family: var(--mono-font); font-size: 14pt; }
+.leyenda .punto { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+
+/* ---------- entradas escalonadas al llegar a cada diapositiva ---------- */
+.reveal section .aparece { opacity: 0; }
+.reveal section.present .aparece { animation: entra 0.9s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 140ms + 250ms); }
+.reveal section.present .aparece.izq { animation-name: entraIzq; }
+.reveal section.present .aparece.zoom { animation-name: entraZoom; }
+
+/* ---------- HUD fijo sobre la escena ---------- */
+.hud { position: fixed; inset: 0; z-index: 3; pointer-events: none; font-family: var(--mono-font); color: var(--primary-color); }
+.hud .esquina { position: absolute; width: 60px; height: 60px; border: 2px solid var(--primary-color); opacity: 0.75;
+  filter: drop-shadow(0 0 6px var(--primary-color)); }
+.hud .esquina.si { left: 18px; top: 18px; border-right: none; border-bottom: none; }
+.hud .esquina.sd { right: 18px; top: 18px; border-left: none; border-bottom: none; }
+.hud .esquina.ii { left: 18px; bottom: 18px; border-right: none; border-top: none; }
+.hud .esquina.id { right: 18px; bottom: 18px; border-left: none; border-top: none; }
+.hud .barra-sup { position: absolute; left: 96px; right: 96px; top: 26px; display: flex; justify-content: space-between;
+  font-size: 1.15vw; letter-spacing: 0.2em; text-shadow: 0 0 8px rgba(56, 232, 255, 0.7); }
+.hud .barra-sup .ambar { color: var(--secondary-color); }
+.hud .barra-inf { position: absolute; left: 96px; right: 96px; bottom: 28px; display: flex; align-items: center; gap: 1.2vw;
+  font-size: 1vw; letter-spacing: 0.2em; }
+.hud .segmentos { flex: 1; display: flex; gap: 6px; }
+.hud .segmentos i { flex: 1; height: 5px; background: rgba(56, 232, 255, 0.18); transition: background 0.4s, box-shadow 0.4s; }
+.hud .segmentos i.hecho { background: rgba(56, 232, 255, 0.55); }
+.hud .segmentos i.ahora { background: var(--secondary-color); box-shadow: 0 0 12px var(--secondary-color); }
+.hud .registro { position: absolute; right: 96px; top: 7.5%; width: 24vw; font-size: 0.62vw; line-height: 1.5;
+  color: rgba(143, 222, 240, 0.5); white-space: nowrap; overflow: hidden; height: 7.5vh;
+  mask-image: linear-gradient(180deg, transparent, #000 25%, #000 75%, transparent); text-align: right; }
+.hud .reticula { position: absolute; width: 34vw; height: 34vw; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  transition: left 1.6s cubic-bezier(.2, .8, .2, 1), opacity 1s; opacity: 0.55; }
+.hud .reticula svg { width: 100%; height: 100%; animation: giro 40s linear infinite; }
+.hud .reticula svg .lento { animation: giro 18s linear infinite reverse; transform-origin: 50% 50%; }
+
+.capa-lineas { position: fixed; inset: 0; z-index: 4; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px); mix-blend-mode: multiply; }
+.capa-vineta { position: fixed; inset: 0; z-index: 4; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.7) 100%); }
+.destello { position: fixed; inset: 0; z-index: 5; pointer-events: none; background: rgba(56, 232, 255, 0.0); }
+.destello.activo { animation: destello 0.55s ease-out; }
+
+/* secuencia de arranque */
+.arranque { position: fixed; inset: 0; z-index: 10; background: #020509; display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono-font); color: var(--primary-color); font-size: 1.3vw; letter-spacing: 0.15em; transition: opacity 0.9s; }
+.arranque pre { margin: 0; white-space: pre; text-shadow: 0 0 10px rgba(56, 232, 255, 0.8); }
+.arranque.fuera { opacity: 0; pointer-events: none; }
+
+.reveal .controls { color: var(--primary-color); }
+.reveal .progress { display: none; }
+
+@keyframes entra { from { opacity: 0; transform: translateY(26px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes entraIzq { from { opacity: 0; transform: translateX(-60px); filter: blur(8px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes entraZoom { from { opacity: 0; transform: scale(1.35); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes parpadeo { 50% { opacity: 0; } }
+@keyframes corriente { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@keyframes barrido { to { top: 110%; } }
+@keyframes giro { to { transform: rotate(360deg); } }
+@keyframes destello { 0% { background: rgba(56, 232, 255, 0.18); } 100% { background: rgba(56, 232, 255, 0); } }
+
+body.limpio .reveal, body.limpio .hud, body.limpio .capa-lineas, body.limpio .destello { visibility: hidden !important; }
+
+@media print { .hud, .capa-lineas, .capa-vineta, .arranque { display: none; } }

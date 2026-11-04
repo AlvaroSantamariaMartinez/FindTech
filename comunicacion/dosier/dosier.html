@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="es" data-version="2.53.4">
+<head>
+<meta charset="utf-8">
+<title>MRAnalyzer — Dosier para inversores</title>
+<link rel="stylesheet" href="dosier.css">
+</head>
+<body>
+
+<!-- ============================================================ 1 · PORTADA -->
+<section class="pagina portada">
+  <img class="fondo" src="img/portada.png" alt="">
+  <div class="velo"></div>
+  <div class="contenido">
+    <p class="ceja">Dosier para inversores · Confidencial</p>
+    <h1>MRAnalyzer</h1>
+    <p class="lema">De la resonancia y el TAC a una anatomía que se imprime, se recorre en realidad virtual y se superpone en realidad aumentada. Sin que los datos salgan del hospital.</p>
+    <div class="pie-portada">
+      <p><span class="etq">Versión</span> <span data-dato="version">2.53.4</span></p>
+      <p><span class="etq">Fecha</span> <span data-dato="fecha">2026-11-04</span></p>
+      <p><span class="etq">Contacto</span> [nombre · correo · teléfono]</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ 2 · RESUMEN -->
+<section class="pagina">
+  <header><p class="seccion">01 · Resumen ejecutivo</p></header>
+  <h2>Anatomía 3D del paciente, automática y local</h2>
+  <p class="entrada">MRAnalyzer convierte un estudio de imagen médica (resonancia, TAC o radiografía) en modelos 3D de los órganos, vasos, huesos y lesiones del paciente, listos para imprimir, explorar en realidad virtual entre varias personas o superponer en realidad aumentada. Todo el proceso es automático y se ejecuta en un ordenador del propio centro.</p>
+  <div class="rejilla-3">
+    <div class="tarjeta"><h3>Problema</h3><p>Obtener la anatomía en 3D exige segmentar a mano, corte a corte, con herramientas especializadas y dispersas. Y los datos de pacientes no deberían salir del centro.</p></div>
+    <div class="tarjeta"><h3>Solución</h3><p>Un único flujo: DICOM → inteligencia artificial con controles → mallas 3D fieles → impresión, RV, RA e informe. El usuario no necesita saber de segmentación.</p></div>
+    <div class="tarjeta ambar"><h3>Qué buscamos</h3><p>[Importe] para [validación clínica, certificación y primeros clientes]. Detalle en «La ronda».</p></div>
+  </div>
+  <div class="cifras">
+    <div><p class="num" data-dato="version">2.53.4</p><p>versión actual, con instalador firmado para Windows</p></div>
+    <div><p class="num" data-dato="pruebas_ok">177</p><p>pruebas automáticas que pasan en cada versión</p></div>
+    <div><p class="num" data-dato="estructuras_tac">117</p><p>estructuras anatómicas reconocidas en un TAC</p></div>
+    <div><p class="num">100&nbsp;%</p><p>local: las imágenes no salen del equipo</p></div>
+  </div>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>2</span></footer>
+</section>
+
+<!-- ============================================================ 3 · PROBLEMA Y OPORTUNIDAD -->
+<section class="pagina">
+  <header><p class="seccion">02 · Problema y oportunidad</p></header>
+  <h2>Cientos de cortes en gris</h2>
+  <div class="dos">
+    <div>
+      <p>Un TAC o una resonancia son cientos de imágenes en escala de grises. Para planificar una cirugía, enseñar anatomía o explicar una lesión a un paciente hace falta verla en 3D, y hoy eso significa:</p>
+      <ul class="lista">
+        <li><b>Trabajo manual de especialista:</b> delimitar estructura a estructura en programas generalistas.</li>
+        <li><b>Herramientas dispersas:</b> visor, segmentación, mallas, impresión 3D y realidad virtual por separado.</li>
+        <li><b>Riesgo con los datos:</b> los servicios en la nube obligan a sacar imágenes de pacientes del centro.</li>
+      </ul>
+    </div>
+    <img class="render" src="img/problema.png" alt="Pila de cortes reales de un TAC de tórax">
+  </div>
+  <h3 class="sub">Usos y clientes</h3>
+  <table class="tabla">
+    <tr><th style="width:28%">Uso</th><th style="width:44%">Qué aporta MRAnalyzer</th><th style="width:28%">Cliente</th></tr>
+    <tr><td>Planificación quirúrgica</td><td>Modelo impreso o en RV de la anatomía del paciente antes de operar</td><td>Servicios quirúrgicos de hospitales</td></tr>
+    <tr><td>Docencia</td><td>Laboratorio de RV compartido con casos reales anonimizados</td><td>Facultades y hospitales universitarios</td></tr>
+    <tr><td>Información al paciente</td><td>Explicar una lesión con su propia anatomía en 3D</td><td>Consultas y servicios de imagen</td></tr>
+  </table>
+  <h3 class="sub">Tamaño de mercado</h3>
+  <div class="rejilla-3">
+    <div class="tarjeta"><p class="etq">TAM</p><p class="num-m">[€ __]</p><p>[definición y fuente]</p></div>
+    <div class="tarjeta"><p class="etq">SAM</p><p class="num-m">[€ __]</p><p>[definición y fuente]</p></div>
+    <div class="tarjeta ambar"><p class="etq">SOM</p><p class="num-m">[€ __]</p><p>[objetivo a 3–5 años y fuente]</p></div>
+  </div>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>3</span></footer>
+</section>
+
+<!-- ============================================================ 4 · PRODUCTO -->
+<section class="pagina">
+  <header><p class="seccion">03 · Producto</p></header>
+  <h2>Un flujo automático, cuatro salidas</h2>
+  <div class="flujo">
+    <div><p class="etq">01 · Entrada</p><p><b>Estudio DICOM</b><br>RM, TAC o radiografía, anonimizado</p></div>
+    <div><p class="etq">02 · IA</p><p><b>Segmentación</b><br>órganos, huesos, vasos, tejidos y hallazgos</p></div>
+    <div><p class="etq">03 · Geometría</p><p><b>Mallas 3D</b><br>lisas, cerradas y fieles al borde real</p></div>
+    <div class="ambar"><p class="etq">04 · Salida</p><p><b>Impresión · RV · RA · informe</b></p></div>
+  </div>
+  <div class="galeria">
+    <figure><img src="img/vasos.png" alt="Árbol vascular pulmonar en 3D"><figcaption>Arterias (rojo) y venas (azul) pulmonares, separadas automáticamente en un TAC.</figcaption></figure>
+    <figure><img src="img/impresion.png" alt="Cerebro dividido en piezas de impresión"><figcaption>Cerebro de una RM T1 cortado en <span data-dato="piezas_cerebro">3</span> piezas para imprimir (<span data-dato="altura_cerebro_mm">134</span> mm, ≈ <span data-dato="pla_kg">1,3</span> kg de PLA).</figcaption></figure>
+    <figure><img src="img/xr.png" alt="Sala de realidad virtual compartida"><figcaption>Laboratorio de RV compartido: hasta <span data-dato="fps_quest">87</span> imágenes/s en Meta Quest 3 (objetivo 90).</figcaption></figure>
+    <figure><img src="img/solucion.png" alt="Tórax reconstruido"><figcaption>Tórax completo reconstruido: huesos, pulmones, órganos y vasos.</figcaption></figure>
+  </div>
+  <p class="nota">Imágenes generadas por MRAnalyzer a partir de muestras públicas de 3D Slicer (CTChest y MRHead), no de pacientes.</p>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>4</span></footer>
+</section>
+
+<!-- ============================================================ 5 · TECNOLOGÍA -->
+<section class="pagina">
+  <header><p class="seccion">04 · Tecnología y ventaja</p></header>
+  <h2>Por qué es difícil de copiar</h2>
+  <div class="rejilla-2">
+    <div class="tarjeta"><h3>IA con controles</h3><p>Las redes proponen y la anatomía comprueba: reglas anatómicas, una segunda red que compite órgano a órgano y pesos verificados por huella criptográfica.</p></div>
+    <div class="tarjeta"><h3>Todo en uno</h3><p>Del archivo DICOM a la pieza impresa, la sala de RV y la RA sobre el modelo impreso, en la misma aplicación.</p></div>
+    <div class="tarjeta"><h3>Local y privado</h3><p>Sin nube: el análisis corre en el equipo del centro y aprovecha la tarjeta gráfica si la hay.</p></div>
+    <div class="tarjeta ambar"><h3>Automático y explicable</h3><p>Cada parámetro se ajusta solo a la imagen y la decisión queda justificada en el informe.</p></div>
+  </div>
+  <h3 class="sub">Arquitectura</h3>
+  <table class="tabla">
+    <tr><th style="width:22%">Capa</th><th style="width:48%">Tecnología</th><th style="width:30%">Tamaño</th></tr>
+    <tr><td>Motor de análisis</td><td>Python: SimpleITK, SciPy, PyTorch, scikit-image, trimesh</td><td><span data-dato="lineas_python">≈ 37 000</span> líneas</td></tr>
+    <tr><td>Interfaz y RV</td><td>Web: Three.js y WebXR (visor, editor, sala compartida)</td><td><span data-dato="lineas_js">≈ 14 000</span> líneas propias</td></tr>
+    <tr><td>Realidad aumentada</td><td>App nativa de Meta Quest 3 (Unity / C#) con red de detección propia</td><td>emparejada con el PC</td></tr>
+    <tr><td>Redes integradas</td><td>TotalSegmentator, SynthSeg, HD-BET, MRSegmentator, nnInteractive, UNet++ para tumores</td><td><span data-dato="estructuras_tac">117</span> estructuras en TAC</td></tr>
+  </table>
+  <h3 class="sub">Propiedad intelectual</h3>
+  <p>[Qué es propio (código, red de detección, flujo automático) y qué se usa bajo licencia de terceros; licencias de los modelos (algunas, como nnInteractive, son no comerciales y habría que sustituirlas o licenciarlas); patentes o registros previstos.]</p>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>5</span></footer>
+</section>
+
+<!-- ============================================================ 6 · ESTADO Y COMPETENCIA -->
+<section class="pagina">
+  <header><p class="seccion">05 · Estado y competencia</p></header>
+  <h2>Un producto que ya funciona</h2>
+  <ul class="lista hitos">
+    <li><b>Análisis completo</b> de RM y TAC: cerebro, cabeza y cuerpo, con búsqueda de hallazgos.</li>
+    <li><b>Instalador de Windows</b> con actualizaciones firmadas con dos claves.</li>
+    <li><b>Sala de RV compartida</b> en Meta Quest 3 y SteamVR, y <b>RA nativa</b> sobre el modelo impreso.</li>
+    <li><b><span data-dato="pruebas_ok">177</span> pruebas automáticas</b> que pasan en cada versión (versión <span data-dato="version">2.53.4</span>).</li>
+    <li>[Pilotos, cartas de interés o usuarios actuales]</li>
+  </ul>
+  <h3 class="sub">Comparativa</h3>
+  <table class="tabla">
+    <tr><th style="width:31%"></th><th style="width:23%">Segmentación manual en software generalista</th><th style="width:23%">Plataformas comerciales de planificación</th><th style="width:23%">MRAnalyzer</th></tr>
+    <tr><td>Automático de principio a fin</td><td>No</td><td>[Parcial]</td><td><b>Sí</b></td></tr>
+    <tr><td>Impresión, RV y RA en uno</td><td>No</td><td>[Parcial]</td><td><b>Sí</b></td></tr>
+    <tr><td>Datos sin salir del centro</td><td>Sí</td><td>[Depende]</td><td><b>Sí</b></td></tr>
+    <tr><td>Certificado como producto sanitario</td><td>[Según producto]</td><td>[Según producto]</td><td><b>Aún no</b> (ver hoja de ruta)</td></tr>
+    <tr><td>Precio</td><td>[__]</td><td>[__]</td><td>[__]</td></tr>
+  </table>
+  <p class="nota">Rellenar las celdas entre corchetes con competidores concretos y sus fuentes.</p>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>6</span></footer>
+</section>
+
+<!-- ============================================================ 7 · NEGOCIO, REGULACIÓN Y HOJA DE RUTA -->
+<section class="pagina">
+  <header><p class="seccion">06 · Negocio y hoja de ruta</p></header>
+  <h2>Del prototipo al hospital</h2>
+  <div class="rejilla-2">
+    <div class="tarjeta"><h3>Modelo de negocio</h3><p>[Licencia anual por centro / por servicio · precio orientativo · servicios de impresión · formación]</p></div>
+    <div class="tarjeta ambar"><h3>Regulación</h3><p>MRAnalyzer no está certificado como producto sanitario. Para usarlo en decisiones clínicas hace falta el marcado CE según el Reglamento (UE) 2017/745 (MDR): [clase prevista, organismo notificado, plazo y coste].</p></div>
+  </div>
+  <h3 class="sub">Hoja de ruta</h3>
+  <div class="hoja">
+    <div><p class="etq">[Trimestre / año]</p><p><b>Validación clínica</b> con [servicio / hospital] frente a la segmentación manual de expertos.</p></div>
+    <div><p class="etq">[Trimestre / año]</p><p><b>Sistema de calidad</b> y documentación técnica para el marcado CE.</p></div>
+    <div><p class="etq">[Trimestre / año]</p><p><b>Primeros clientes</b> de pago [docencia / planificación].</p></div>
+    <div><p class="etq">[Trimestre / año]</p><p><b>[Siguiente hito]</b></p></div>
+  </div>
+  <h3 class="sub">Riesgos y cómo se mitigan</h3>
+  <table class="tabla">
+    <tr><th style="width:35%">Riesgo</th><th style="width:65%">Mitigación</th></tr>
+    <tr><td>Certificación lenta o costosa</td><td>[Plan regulatorio; empezar por usos no diagnósticos como la docencia]</td></tr>
+    <tr><td>Licencias de modelos de terceros</td><td>[Sustituir o licenciar los de uso no comercial]</td></tr>
+    <tr><td>Precisión en casos difíciles</td><td>Controles anatómicos, segunda opinión y corrección manual en el editor; [validación clínica]</td></tr>
+  </table>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>7</span></footer>
+</section>
+
+<!-- ============================================================ 8 · EQUIPO Y RONDA -->
+<section class="pagina final">
+  <header><p class="seccion">07 · Equipo y ronda</p></header>
+  <h2>Equipo</h2>
+  <div class="rejilla-3">
+    <div class="tarjeta"><h3>[Nombre]</h3><p>[Rol · experiencia relevante]</p></div>
+    <div class="tarjeta"><h3>[Nombre]</h3><p>[Rol · experiencia relevante]</p></div>
+    <div class="tarjeta"><h3>[Asesor/a clínico/a]</h3><p>[Servicio · centro]</p></div>
+  </div>
+  <h2 style="margin-top: 10mm;">La ronda</h2>
+  <div class="ronda">
+    <div class="importe"><p class="etq">Buscamos</p><p class="num-g">[€ ___ ___]</p><p>[instrumento: participaciones / préstamo convertible / subvención]</p></div>
+    <table class="tabla">
+      <tr><th style="width:60%">Uso de los fondos</th><th style="width:40%">%</th></tr>
+      <tr><td>Validación clínica</td><td>[__ %]</td></tr>
+      <tr><td>Certificación (MDR)</td><td>[__ %]</td></tr>
+      <tr><td>Desarrollo de producto</td><td>[__ %]</td></tr>
+      <tr><td>Comercial</td><td>[__ %]</td></tr>
+    </table>
+  </div>
+  <div class="contacto">
+    <p class="num-m">Gracias</p>
+    <p>[Nombre] · [correo] · [teléfono] · [web]</p>
+  </div>
+  <footer><span>MRAnalyzer · Dosier para inversores</span><span>8</span></footer>
+</section>
+
+</body>
+</html>
