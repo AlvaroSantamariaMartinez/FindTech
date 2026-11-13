@@ -1,0 +1,499 @@
+<title>Zona de seguimiento</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap">
+<style>
+/* Una ficha técnica de una columna: resumen, maqueta, comparación y presupuesto, en ese orden. */
+:root{
+  --bg:#f5f6f9; --surface:#ffffff; --ink:#12161c; --ink2:#48515e; --muted:#778192; --line:#dfe3ea; --axis:#c2c8d2;
+  --accent:#1d5fd1; --accent-soft:rgba(29,95,209,.09); --on-accent:#ffffff;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --display:"Space Grotesk","Inter",system-ui,sans-serif; --body:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0f1318; --surface:#171c23; --ink:#eef1f5; --ink2:#bcc4cf; --muted:#8a93a1; --line:#28303a; --axis:#3b4450;
+  --accent:#6aa2f3; --accent-soft:rgba(106,162,243,.12); --on-accent:#0f1318;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0f1318; --surface:#171c23; --ink:#eef1f5; --ink2:#bcc4cf; --muted:#8a93a1; --line:#28303a; --axis:#3b4450;
+  --accent:#6aa2f3; --accent-soft:rgba(106,162,243,.12); --on-accent:#0f1318;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.hoja{max-width:900px;margin:0 auto;padding-block:40px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:600;letter-spacing:-.02em}
+h2{font-size:1.6rem;font-weight:600;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:600}
+p{margin:0;max-width:66ch}
+section,header{display:flex;flex-direction:column;gap:20px;min-width:0}
+.sobre{font-size:.78rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.entrada{font-size:1.12rem;color:var(--ink2)}
+.cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cifra{background:var(--surface);padding:18px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.cifra b{font-family:var(--display);font-size:1.75rem;font-weight:600;letter-spacing:-.01em}
+.cifra span{font-size:.9rem;color:var(--ink2)}
+.aviso{border-left:3px solid var(--accent);background:var(--accent-soft);padding:14px 18px;border-radius:0 8px 8px 0;font-size:.95rem;color:var(--ink2);max-width:none}
+figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+figcaption{font-size:.88rem;color:var(--muted);max-width:70ch}
+.render{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);line-height:0}
+.render img{width:100%;height:auto;display:block}
+.marca{position:absolute;transform:translate(-50%,-50%);width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--on-accent);font:600 13px/24px var(--body);text-align:center;box-shadow:0 0 0 2px var(--surface)}
+.leyenda-maqueta{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px 24px;font-size:.93rem}
+.leyenda-maqueta li{display:flex;gap:10px;align-items:baseline;min-width:0}
+.leyenda-maqueta i{flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font:600 12px/22px var(--body);text-align:center;font-style:normal}
+.dos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
+.dos>*{min-width:0}
+.tarjeta{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.tarjeta h3+p{font-size:.92rem;color:var(--ink2)}
+.corre{overflow-x:auto}
+svg{max-width:100%;height:auto;display:block}
+svg text{font-family:var(--body)}
+.plano{color:var(--ink)}
+.leyenda{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.85rem;color:var(--ink2)}
+.leyenda span{display:inline-flex;align-items:center;gap:7px}
+.leyenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.leyenda i.punto{border-radius:50%}
+.grafica{position:relative;min-width:0}
+.grafica svg{overflow:visible}
+.eje{fill:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.rotulo{fill:var(--ink);font-size:13px}
+.valor{fill:var(--ink2);font-size:12px;font-variant-numeric:tabular-nums}
+.malla{stroke:var(--line);stroke-width:1}
+.base{stroke:var(--axis);stroke-width:1}
+.ref{stroke:var(--muted);stroke-width:1}
+.f1{fill:var(--s1)}.f2{fill:var(--s2)}.f3{fill:var(--s3)}.f4{fill:var(--s4)}.f5{fill:var(--s5)}
+.b1{background:var(--s1)}.b2{background:var(--s2)}.b3{background:var(--s3)}.b4{background:var(--s4)}.b5{background:var(--s5)}
+.toca{cursor:default;outline:none}
+.toca:hover,.toca:focus-visible{filter:brightness(1.12)}
+.toca:focus-visible{stroke:var(--ink);stroke-width:2}
+#globo{position:fixed;z-index:20;pointer-events:none;background:var(--ink);color:var(--bg);padding:8px 10px;border-radius:6px;font-size:.82rem;line-height:1.35;max-width:240px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#globo b{display:block;font-size:.95rem}
+details{font-size:.9rem}
+summary{cursor:pointer;color:var(--accent);font-weight:500;width:fit-content}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+.corre table{min-width:540px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--ink2);font-size:.82rem}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.total td{font-weight:600;border-bottom:2px solid var(--axis)}
+tr.grupo td{padding-top:22px;font-family:var(--display);font-weight:600;font-size:1rem;border-bottom:1px solid var(--axis)}
+.pildora{display:inline-block;font-size:.72rem;padding:1px 7px;border-radius:999px;border:1px solid var(--axis);color:var(--ink2);white-space:nowrap}
+ul.lista{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px;max-width:68ch}
+ol.pasos{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:12px;max-width:68ch}
+a{color:var(--accent)}
+.fuentes{font-size:.88rem;color:var(--ink2);columns:2 320px;column-gap:32px;padding-left:1.1em;margin:0}
+.fuentes li{break-inside:avoid;margin-bottom:6px}
+.nota{font-size:.88rem;color:var(--muted)}
+</style>
+
+<div class="hoja">
+<header>
+  <span class="sobre">MRAnalyzer Lab · «Órgano real» · 13 de noviembre de 2026</span>
+  <h1>Zona de seguimiento</h1>
+  <p class="entrada">Cuatro cámaras fijas alrededor de la mesa siguen el órgano de silicona y le dicen a las gafas dónde está. Así la pose deja de depender de lo que ve la cámara de las gafas, que es lo que falla cuando la mano tapa la pieza.</p>
+  <div class="cifras">
+    <div class="cifra"><b>60 % → 99,9 %</b><span>Agarres en los que la medida queda dentro de 5 mm con la mano encima: gafas solas frente a cuatro cámaras. Simulación.</span></div>
+    <div class="cifra"><b>≈ 330 €</b><span>Material de la prueba con dos cámaras. La zona completa de cuatro sale por unos 700 €.</span></div>
+    <div class="cifra"><b>97 → 75 ms</b><span>Retraso antes de la predicción. Es una estimación y mejora poco: el retraso no es el motivo para hacerlo.</span></div>
+  </div>
+  <p class="aviso">La zona no existe todavía, así que aquí no hay nada medido en un montaje real. La comparación sale de una simulación geométrica hecha para este informe, de las cifras del diseño de «Órgano real» y de un precedente publicado. En cada dato se dice de dónde viene. No se ha tocado el programa.</p>
+</header>
+
+<section>
+  <span class="sobre">Maqueta</span>
+  <h2>Cómo sería</h2>
+  <figure>
+    <div class="render">
+      <img alt="Maqueta en 3D: un marco de aluminio sobre una mesa con una cámara en cada esquina superior, el soporte con el cerebro de silicona en el centro sobre una base azul, un portátil a la derecha y las gafas a la izquierda." src="data:image/jpeg;base64,__IMG__">
+      <span class="marca" style="left:47.6%;top:12.6%">1</span>
+      <span class="marca" style="left:63%;top:15.6%">2</span>
+      <span class="marca" style="left:54.4%;top:36%">3</span>
+      <span class="marca" style="left:48.5%;top:48.5%">4</span>
+      <span class="marca" style="left:57%;top:66%">5</span>
+      <span class="marca" style="left:35.3%;top:58.8%">6</span>
+      <span class="marca" style="left:70.9%;top:35.3%">7</span>
+      <span class="marca" style="left:82.6%;top:62.5%">8</span>
+      <span class="marca" style="left:24.3%;top:41.6%">9</span>
+    </div>
+    <figcaption>Maqueta a escala hecha con Blender. El órgano es una forma genérica, no es de ningún paciente. Los conos azules son lo que ve cada cámara.</figcaption>
+  </figure>
+  <ul class="leyenda-maqueta">
+    <li><i>1</i><span>Cámara Global Shutter con lente de 6 mm. Son cuatro, una por esquina, a 55 cm de alto.</span></li>
+    <li><i>2</i><span>Tiras LED. Con luz fija la exposición es corta y la imagen no sale movida.</span></li>
+    <li><i>3</i><span>Marco de perfil de aluminio de 62 × 62 × 58 cm.</span></li>
+    <li><i>4</i><span>El soporte giratorio ya diseñado, sin paredes, con el órgano.</span></li>
+    <li><i>5</i><span>Base azul mate. Hace de fondo de contraste, como la cabina.</span></li>
+    <li><i>6</i><span>Código QR pegado a la base. Con él las gafas saben dónde está la zona.</span></li>
+    <li><i>7</i><span>Raspberry Pi 5. Son dos, una por cada dos cámaras.</span></li>
+    <li><i>8</i><span>El PC de MRAnalyzer, que calcula la pose.</span></li>
+    <li><i>9</i><span>Las gafas Quest 3, que reciben la pose y pintan.</span></li>
+  </ul>
+
+  <div class="dos">
+    <figure class="tarjeta">
+      <h3>Planta</h3>
+      <svg class="plano" viewBox="0 0 520 470" role="img" aria-label="Planta de la zona: un marco cuadrado de 620 mm con una cámara en cada esquina apuntando al centro, donde está el soporte con el órgano. Quien mira se coloca delante.">
+        <defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+        <rect x="95" y="55" width="330" height="330" rx="4" fill="#2a66c9" opacity=".22"/>
+        <g fill="#2a78d6" opacity=".16">
+          <path d="M117.5 77.5 L341 181 L221 301z"/><path d="M402.5 77.5 L299 301 L179 181z"/>
+          <path d="M117.5 362.5 L221 139 L341 259z"/><path d="M402.5 362.5 L179 259 L299 139z"/>
+        </g>
+        <rect x="105" y="65" width="310" height="310" fill="none" stroke="currentColor" stroke-width="5" opacity=".55"/>
+        <circle cx="260" cy="220" r="49" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <ellipse cx="260" cy="220" rx="34" ry="46" fill="#e9a79f" stroke="currentColor" stroke-width="1"/>
+        <rect x="210" y="170" width="100" height="100" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="5 4"/>
+        <g fill="currentColor">
+          <rect x="107" y="67" width="21" height="21" rx="3"/><rect x="392" y="67" width="21" height="21" rx="3"/>
+          <rect x="107" y="352" width="21" height="21" rx="3"/><rect x="392" y="352" width="21" height="21" rx="3"/>
+        </g>
+        <rect x="128" y="318" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M134 324h8v8h-8zM148 324h8v8h-8zM134 338h8v8h-8zM150 340h4v4h-4z" fill="currentColor"/>
+        <line x1="105" y1="38" x2="415" y2="38" stroke="currentColor" stroke-width="1" marker-start="url(#fl)" marker-end="url(#fl)"/>
+        <text x="260" y="30" text-anchor="middle" font-size="17" fill="currentColor">620 mm entre postes</text>
+        <text x="260" y="160" text-anchor="middle" font-size="17" fill="currentColor">Zona cubierta: 20 × 20 cm</text>
+        <text x="170" y="341" font-size="17" fill="currentColor">QR</text>
+        <text x="136" y="110" font-size="17" fill="currentColor">Cámara</text>
+        <rect x="225" y="415" width="70" height="26" rx="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="260" y="460" text-anchor="middle" font-size="17" fill="currentColor">Quien mira, con las gafas</text>
+        <line x1="260" y1="412" x2="260" y2="282" stroke="currentColor" stroke-width="1" stroke-dasharray="2 4" marker-end="url(#fl)"/>
+      </svg>
+      <figcaption>Cada cámara queda a 54 cm del centro y lo ve con 0,3 mm por píxel. La simulación comprobó que el recuadro de trazos, de 20 × 20 cm y 16 de alto, entra en las cuatro vistas.</figcaption>
+    </figure>
+    <div class="tarjeta">
+      <h3>Ficha</h3>
+      <table>
+        <tr><th>Cámaras</th><td>4 × Raspberry Pi Global Shutter, 1456 × 1088, con disparo externo para tomar las cuatro imágenes a la vez</td></tr>
+        <tr><th>Lentes</th><td>6 mm, montura CS. Ven 45° × 35°</td></tr>
+        <tr><th>Ritmo</th><td>60 imágenes por segundo. La cámara de las gafas da 30</td></tr>
+        <tr><th>Captura</th><td>2 × Raspberry Pi 5, con dos cámaras cada una</td></tr>
+        <tr><th>Cálculo</th><td>El PC de MRAnalyzer: silueta de cada vista y una sola pose con todas</td></tr>
+        <tr><th>Enlace</th><td>Ethernet de las Raspberry al PC. Wifi del PC a las gafas, como ahora</td></tr>
+        <tr><th>Referencia</th><td>Un código QR fijo en la base, leído por las gafas</td></tr>
+        <tr><th>Reserva</th><td>Fuera de la zona sigue valiendo el seguimiento de ahora</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <figure class="tarjeta">
+    <h3>Por dónde va el dato</h3>
+    <div class="corre">
+    <svg class="plano" viewBox="0 0 820 270" style="min-width:720px" role="img" aria-label="Las cuatro cámaras, sincronizadas por una Pico, mandan sus imágenes a dos Raspberry Pi 5, que las pasan por Ethernet al PC. El PC calcula la pose y la manda por wifi a las gafas, que sitúan la zona con el código QR.">
+      <defs><marker id="fd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+      <g fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="10" y="40" width="150" height="70" rx="8"/><rect x="230" y="40" width="140" height="70" rx="8"/>
+        <rect x="450" y="40" width="170" height="70" rx="8" stroke="#2a78d6" stroke-width="2.5"/><rect x="700" y="40" width="110" height="70" rx="8"/>
+        <rect x="10" y="190" width="150" height="56" rx="8" stroke-dasharray="5 4"/><rect x="680" y="190" width="130" height="56" rx="8" stroke-dasharray="5 4"/>
+      </g>
+      <g fill="currentColor" font-size="13" text-anchor="middle">
+        <text x="85" y="70" font-weight="600">4 cámaras</text><text x="85" y="90" font-size="12">Global Shutter</text>
+        <text x="300" y="70" font-weight="600">2 Raspberry Pi 5</text><text x="300" y="90" font-size="12">captura</text>
+        <text x="535" y="66" font-weight="600">PC de MRAnalyzer</text><text x="535" y="84" font-size="12">silueta de cada vista</text><text x="535" y="100" font-size="12">y pose con todas</text>
+        <text x="755" y="66" font-weight="600">Quest 3</text><text x="755" y="84" font-size="12">predicción</text><text x="755" y="100" font-size="12">y pintado</text>
+        <text x="85" y="214" font-weight="600">Pico</text><text x="85" y="232" font-size="12">disparo a 60 Hz</text>
+        <text x="745" y="214" font-weight="600">Código QR</text><text x="745" y="232" font-size="12">fijo en la base</text>
+        <text x="195" y="64" font-size="12">imagen</text><text x="195" y="96" font-size="12">60/s</text>
+        <text x="410" y="64" font-size="12">Ethernet</text>
+        <text x="660" y="64" font-size="12">pose</text><text x="660" y="96" font-size="12">por wifi</text>
+        <text x="130" y="156" font-size="12" text-anchor="start">sincroniza</text><text x="690" y="156" font-size="12" text-anchor="end">sitúa la zona</text>
+      </g>
+      <g stroke="currentColor" stroke-width="1.5" fill="none">
+        <line x1="160" y1="75" x2="228" y2="75" marker-end="url(#fd)"/><line x1="370" y1="75" x2="448" y2="75" marker-end="url(#fd)"/>
+        <line x1="620" y1="75" x2="698" y2="75" marker-end="url(#fd)"/>
+        <line x1="85" y1="190" x2="85" y2="113" marker-end="url(#fd)"/><line x1="745" y1="190" x2="745" y2="113" marker-end="url(#fd)"/>
+      </g>
+    </svg>
+    </div>
+    <figcaption>Lo que cambia respecto a hoy es el recuadro azul. La pose se calcula en el PC con cuatro vistas, y las gafas dejan de gastar entre 15 y 20 ms por imagen en el seguidor.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <span class="sobre">Benchmarking</span>
+  <h2>En qué mejora lo que hay ahora</h2>
+  <p>Simulé 4.000 agarres de una pieza del tamaño del cerebro de prueba, con una o dos manos sujetándola, y calculé con qué precisión queda determinada su pose según qué cámaras la ven. El ruido está ajustado para que la cámara de las gafas, sin mano, dé 1 mm, que es lo que midió el seguidor en el banco sintético del proyecto.</p>
+
+  <div class="tarjeta">
+    <h3>Con la mano encima, la medida aguanta</h3>
+    <p>Porcentaje de agarres en los que la precisión de la medida queda dentro de 2 mm y de 5 mm, los objetivos del proyecto con la pieza apoyada y en la mano.</p>
+    <div class="leyenda"><span><i class="b1"></i>Dentro de 2 mm</span><span><i class="b2"></i>Dentro de 5 mm</span></div>
+    <div class="grafica" id="g-aguanta"></div>
+    <details><summary>Ver los datos</summary><div class="corre" id="t-aguanta"></div></details>
+  </div>
+
+  <div class="tarjeta">
+    <h3>Cuánto se equivoca la medida con la mano encima</h3>
+    <p>Error de posición y de giro, en escala logarítmica. El punto azul es el agarre típico y el naranja el peor 5 %.</p>
+    <div class="leyenda"><span><i class="b1 punto"></i>Mediana</span><span><i class="b2 punto"></i>Peor 5 %</span></div>
+    <div class="dos">
+      <div><div class="grafica" id="g-pos"></div></div>
+      <div><div class="grafica" id="g-giro"></div></div>
+    </div>
+    <p class="nota">Líneas verticales del primer panel: 1 mm, el suelo realista que impone la calibración; y 5 mm, el objetivo del proyecto en la mano. Por debajo de 1 mm las cifras de las cámaras fijas son teóricas.</p>
+    <details><summary>Ver los datos, también sin mano</summary><div class="corre" id="t-precision"></div></details>
+  </div>
+
+  <div class="tarjeta">
+    <h3>El retraso baja poco</h3>
+    <p>Milisegundos desde que la pieza se mueve hasta que la malla se pinta, antes de la predicción. Los valores de hoy salen del diseño de «Órgano real». Los de la zona son supuestos, sin medir.</p>
+    <div class="leyenda"><span><i class="b1"></i>Espera a la imagen</span><span><i class="b2"></i>De la luz al programa</span><span><i class="b3"></i>Red</span><span><i class="b4"></i>Cálculo</span><span><i class="b5"></i>Pintar</span></div>
+    <div class="grafica" id="g-retraso"></div>
+    <details><summary>Ver los datos</summary><div class="corre" id="t-retraso"></div></details>
+  </div>
+
+  <div class="tarjeta">
+    <h3>Resumen</h3>
+    <div class="corre">
+    <table>
+      <tr><th>Aspecto</th><th>Ahora</th><th>Zona de 4 cámaras</th><th>De dónde sale</th></tr>
+      <tr><td>La mano tapa la pieza</td><td>Dentro de 5 mm en el 60 % de los agarres</td><td>En el 99,9 %</td><td>Simulación</td></tr>
+      <tr><td>Peor 5 % con la mano</td><td>26 mm y 19°: perdida</td><td>0,5 mm y 1,5° teóricos</td><td>Simulación</td></tr>
+      <tr><td>Giro, sin mano</td><td>1,6°</td><td>0,2° teóricos</td><td>Simulación</td></tr>
+      <tr><td>Precisión con todo a favor</td><td>1 mm y 0,5° en el banco sintético</td><td>1,0 mm y 0,9° con cinco cámaras</td><td>Diseño del proyecto y Hein et al.</td></tr>
+      <tr><td>Imágenes por segundo</td><td>30</td><td>60</td><td>Fichas de las cámaras</td></tr>
+      <tr><td>Retraso antes de predecir</td><td>Unos 97 ms</td><td>Unos 75 ms</td><td>Diseño y supuestos</td></tr>
+      <tr><td>Trabajo de las gafas</td><td>Seguidor de 15 a 20 ms por imagen, más la red de la silueta</td><td>Solo filtrar y pintar</td><td>Diseño del proyecto</td></tr>
+      <tr><td>Dónde funciona</td><td>En cualquier mesa</td><td>Solo dentro de la zona</td><td>Geometría</td></tr>
+      <tr><td>Error que añade</td><td>Ninguno: mide desde las propias gafas</td><td>El de situar la zona con las gafas, por medir</td><td>Sin dato</td></tr>
+      <tr><td>Montaje</td><td>Ninguno</td><td>Marco, calibración de las cámaras y luz</td><td>Diseño</td></tr>
+    </table>
+    </div>
+  </div>
+
+  <h3>Cómo leer estas cifras</h3>
+  <ul class="lista">
+    <li><b>Es precisión de la medida con la pieza quieta.</b> No cuenta el retraso ni el movimiento. El objetivo de 5 mm del proyecto sí los cuenta, así que el porcentaje real será menor en los dos sistemas.</li>
+    <li><b>Lo fiable es la proporción.</b> Las décimas de milímetro de las cámaras fijas son el límite del ruido. En un montaje real mandan la calibración y la silicona, que cede. El precedente publicado con cinco cámaras se quedó en 1 mm.</li>
+    <li><b>La pieza simulada es un huevo liso.</b> El cerebro de verdad tiene surcos que ayudan con el giro a los dos sistemas. Por eso el giro de las gafas sale aquí en 1,6° y en el banco del proyecto en 0,5°.</li>
+    <li><b>La mano es un modelo.</b> Dedos, palma y antebrazo hechos con cápsulas, con agarres por debajo, por el costado y por encima, y dos manos en uno de cada tres casos. Con guantes azules, los dos sistemas irían mejor.</li>
+    <li><b>El error de situar la zona no está.</b> Las cámaras miden en la sala y las gafas pintan desde la cabeza. Si la referencia se desvía 2 mm, la malla se desvía 2 mm aunque la medida sea perfecta. Es lo primero que hay que medir.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="sobre">Presupuesto</span>
+  <h2>Cuánto cuesta el material</h2>
+  <p>Precios de tienda consultados el 13 de noviembre de 2026, con IVA. Las Raspberry Pi han subido tres veces este año por la memoria, así que conviene confirmar el día de la compra. No se cuentan el PC ni las gafas, que ya están, ni las horas de programación.</p>
+  <div class="tarjeta">
+    <h3>Coste de material por opción</h3>
+    <div class="grafica" id="g-coste"></div>
+  </div>
+  <div class="tarjeta">
+    <div class="corre">
+    <table id="t-presupuesto"></table>
+    </div>
+    <p class="nota">«Tienda» es un precio visto hoy en una tienda concreta, enlazada en las fuentes. «Estimación» es un precio orientativo mío, sin verificar. Varias tiendas daban la cámara Global Shutter sin existencias.</p>
+  </div>
+  <ul class="lista">
+    <li><b>De la prueba a la zona completa no se tira nada.</b> Ampliar de dos a cuatro cámaras cuesta unos 370 € más.</li>
+    <li><b>El acelerador de IA no hace falta para empezar.</b> Nuestra red de la silueta tarda 4 ms por imagen en un PC. Las placas AI HAT+ solo compensan si el PC no puede con las cuatro cámaras.</li>
+    <li><b>Con las AI Camera, tu idea de partida, sale parecido de precio.</b> A cambio no he encontrado que admitan disparo externo, su sensor no es de obturador global y habría que convertir la red con las herramientas de Sony.</li>
+    <li><b>Los codificadores en el soporte cuestan unos 30 €.</b> Solo miden el giro con la pieza montada, pero ahí no les afecta ninguna mano. Se pueden hacer a la vez.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="sobre">Propuesta</span>
+  <h2>Por dónde empezaría</h2>
+  <ol class="pasos">
+    <li><b>Prueba con dos cámaras, unos 330 €.</b> En las dos esquinas de atrás, sobre trípodes o piezas impresas, con el cálculo en el PC. En la simulación, dos cámaras ya dejan dentro de 5 mm el 97 % de los agarres.</li>
+    <li><b>Medir tres cosas antes de comprar más.</b> El error con el órgano de verdad, usando los hoyuelos de validación que ya prevé el diseño. El retraso total hasta las gafas. Y cuánto se desvía la zona al situarla con el código QR.</li>
+    <li><b>Si las tres salen bien, ampliar a cuatro cámaras con el marco.</b> Si la que falla es la referencia con las gafas, el montaje sigue sirviendo para validar el seguimiento de ahora con una medida externa.</li>
+  </ol>
+  <p class="nota">Pendiente de comprobar antes de programar: si la lectura de códigos QR está disponible en la versión del SDK de Meta que usa el Lab. La documentación pide la v83 o posterior.</p>
+</section>
+
+<section>
+  <span class="sobre">Fuentes</span>
+  <ul class="fuentes">
+    <li><a href="https://arxiv.org/pdf/2305.03535">Hein et al.: pose 6DoF sin marcadores con varias cámaras</a></li>
+    <li><a href="https://www.raspberrypi.com/documentation/accessories/global-shutter-camera.html">Raspberry Pi: Global Shutter Camera y disparo externo</a></li>
+    <li><a href="https://developers.meta.com/horizon/documentation/unity/unity-mr-utility-kit-qrcode-detection">Meta: detección de códigos QR con MRUK</a></li>
+    <li><a href="https://es.farnell.com/raspberry-pi/sc0926/c-mara-obturador-global-ordenador/dp/4163984">Farnell España: cámara Global Shutter</a></li>
+    <li><a href="https://shop.pimoroni.com/en-eu/products/raspberry-pi-global-shutter-camera">Pimoroni UE: cámara Global Shutter</a></li>
+    <li><a href="https://welectron.com/Official-Raspberry-Pi-6mm-Wide-Angle-Lens-CS-Mount">Welectron: lente oficial de 6 mm</a></li>
+    <li><a href="https://www.tomshardware.com/raspberry-pi/component-shortages-drive-raspberry-pi-prices-up-by-up-to-23-percent-escalating-lpddr4-lpddr5-costs-trigger-the-third-price-hike-of-the-year">Tom's Hardware: precios de la Raspberry Pi 5 en 2026</a></li>
+    <li><a href="https://kubii.com/en/power-supplies/4107-power-supply-raspberry-pi-27w-usb-c-3272496315761.html">Kubii: fuente oficial de 27 W</a></li>
+    <li><a href="https://shop.pimoroni.com/en-eu/products/raspberry-pi-ai-hat">Pimoroni UE: AI HAT+</a></li>
+    <li><a href="https://es.farnell.com/raspberry-pi/sc1174/rpi-ai-camera-intelligent-vision/dp/4531089">Farnell España: AI Camera</a></li>
+    <li><a href="https://www.raspberrypi.com/products/ai-camera/">Raspberry Pi: AI Camera</a></li>
+    <li><a href="https://sixfab.com/blog/raspberry-pi-5-ai-hat-benchmark-deepx-vs-hailo/">Sixfab: comparativa de placas de IA</a></li>
+    <li><a href="https://38-3d.co.uk/products/as5600-kodarmodul">38-3D: módulo AS5600</a></li>
+    <li>Del proyecto: <code>DISENO-realidad-mixta.md</code> para los retrasos y las precisiones de hoy, y <code>simulacion_zona.py</code> para la simulación.</li>
+  </ul>
+</section>
+</div>
+<div id="globo" hidden></div>
+
+<script>
+const D = __DATOS__;
+const CONF = ["Gafas (ahora)", "2 cámaras fijas", "3 cámaras fijas", "4 cámaras fijas"];
+const NS = "http://www.w3.org/2000/svg";
+const num = (v, d = 1) => v.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d });
+const estrecho = () => innerWidth < 560;
+const cada = (lista, ancho) => ancho < 300 ? lista.filter((_, i) => i % 2 === 0) : lista;
+const dec = v => v < 10 ? num(v, v < 1 ? 2 : 1) : num(v, 0);
+function el(tag, at, padre, texto) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in at) e.setAttribute(k, at[k]);
+  if (texto != null) e.textContent = texto;
+  if (padre) padre.appendChild(e);
+  return e;
+}
+const globo = document.getElementById("globo");
+function tocable(e, valor, rotulo) {
+  e.classList.add("toca"); e.setAttribute("tabindex", "0"); e.setAttribute("role", "img"); e.setAttribute("aria-label", rotulo + ": " + valor);
+  const ver = (x, y) => {
+    globo.textContent = ""; const b = document.createElement("b"); b.textContent = valor; globo.append(b, rotulo); globo.hidden = false;
+    const w = globo.offsetWidth, h = globo.offsetHeight;
+    globo.style.left = Math.max(8, Math.min(innerWidth - w - 8, x + 12)) + "px";
+    globo.style.top = Math.max(8, y - h - 12) + "px";
+  };
+  e.addEventListener("pointermove", ev => ver(ev.clientX, ev.clientY));
+  e.addEventListener("pointerleave", () => globo.hidden = true);
+  e.addEventListener("focus", () => { const r = e.getBoundingClientRect(); ver(r.left + r.width / 2, r.top); });
+  e.addEventListener("blur", () => globo.hidden = true);
+}
+function lienzo(id, alto) {
+  const caja = document.getElementById(id); caja.textContent = "";
+  const ancho = Math.max(260, caja.clientWidth);
+  return [el("svg", { width: ancho, height: alto, viewBox: `0 0 ${ancho} ${alto}` }, caja), ancho];
+}
+function barra(svg, x, y, w, h, clase) {  // (extremo del dato redondeado, base recta)
+  const r = Math.min(4, w);
+  return el("path", { d: `M${x} ${y}h${w - r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${-(w - r)}z`, class: clase }, svg);
+}
+function tabla(id, cabeza, filas) {
+  const t = document.createElement("table"), c = t.insertRow();
+  cabeza.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i) th.className = "n"; c.appendChild(th); });
+  filas.forEach(f => { const r = t.insertRow(); f.forEach((v, i) => { const td = r.insertCell(); td.textContent = v; if (i) td.className = "n"; }); });
+  const caja = document.getElementById(id); caja.textContent = ""; caja.appendChild(t);
+}
+
+function aguanta() {
+  const P = D.escenarios["con mano"].precision, fila = 50, izq = estrecho() ? 104 : 128, der = 52, arriba = 6, abajo = 26;
+  const [svg, W] = lienzo("g-aguanta", arriba + fila * CONF.length + abajo), ancho = W - izq - der;
+  for (const t of cada([0, 25, 50, 75, 100], ancho)) {
+    const x = izq + ancho * t / 100;
+    el("line", { x1: x, x2: x, y1: arriba, y2: arriba + fila * CONF.length, class: t ? "malla" : "base" }, svg);
+    el("text", { x, y: arriba + fila * CONF.length + 18, "text-anchor": "middle", class: "eje" }, svg, t + " %");
+  }
+  CONF.forEach((c, i) => {
+    const y = arriba + i * fila + 9;
+    el("text", { x: 0, y: y + 20, class: "rotulo" }, svg, c);
+    [["dentro_de_2mm", "f1", "dentro de 2 mm"], ["dentro_de_5mm", "f2", "dentro de 5 mm"]].forEach(([k, clase, que], j) => {
+      const v = P[c][k], w = Math.max(2, ancho * v / 100), yy = y + j * 16;
+      tocable(barra(svg, izq, yy, w, 14, clase), num(v) + " %", c + ", " + que);
+      el("text", { x: izq + w + 6, y: yy + 11, class: "valor" }, svg, num(v) + " %");
+    });
+  });
+  tabla("t-aguanta", ["Con la mano encima", "Dentro de 2 mm", "Dentro de 5 mm"], CONF.map(c => [c, num(P[c].dentro_de_2mm) + " %", num(P[c].dentro_de_5mm) + " %"]));
+}
+
+function rango(id, clave, titulo, unidad, min, max, marcas, refs) {
+  const P = D.escenarios["con mano"].precision, fila = 46, izq = estrecho() ? 104 : 128, der = 26, arriba = 30, abajo = 26;
+  const [svg, W] = lienzo(id, arriba + fila * CONF.length + abajo), ancho = W - izq - der;
+  const X = v => izq + ancho * Math.log10(v / min) / Math.log10(max / min);
+  el("text", { x: 0, y: 14, class: "rotulo", "font-weight": 600 }, svg, titulo);
+  for (const t of marcas) {
+    el("line", { x1: X(t), x2: X(t), y1: arriba, y2: arriba + fila * CONF.length, class: "malla" }, svg);
+    el("text", { x: X(t), y: arriba + fila * CONF.length + 18, "text-anchor": "middle", class: "eje" }, svg, String(t).replace(".", ",") + " " + unidad);
+  }
+  for (const r of refs) el("line", { x1: X(r), x2: X(r), y1: arriba - 4, y2: arriba + fila * CONF.length, class: "ref" }, svg);
+  CONF.forEach((c, i) => {
+    const y = arriba + i * fila + 30, a = P[c][clave].mediana, b = P[c][clave].p95;
+    el("text", { x: 0, y: y + 4, class: "rotulo" }, svg, c);
+    el("line", { x1: X(a), x2: X(b), y1: y, y2: y, stroke: "var(--axis)", "stroke-width": 2 }, svg);
+    [[a, "f1", "mediana"], [b, "f2", "peor 5 %"]].forEach(([v, clase, que]) => {
+      el("text", { x: X(v), y: y - 11, "text-anchor": "middle", class: "valor" }, svg, dec(v));
+      const p = el("circle", { cx: X(v), cy: y, r: 6, class: clase, stroke: "var(--surface)", "stroke-width": 2 }, svg);
+      tocable(p, dec(v) + " " + unidad, c + ", " + que);
+    });
+  });
+}
+
+const RETRASO = [
+  ["Gafas (ahora)", [17, 50, 0, 17.5, 12.5]],
+  ["Zona, 4 cámaras", [8, 25, 14, 15, 12.5]],
+];
+const TRAMOS = ["Espera a la imagen", "De la luz al programa", "Red", "Cálculo", "Pintar"];
+function retraso() {
+  const fila = 46, izq = estrecho() ? 104 : 128, der = 60, arriba = 6, abajo = 26, max = 100;
+  const [svg, W] = lienzo("g-retraso", arriba + fila * RETRASO.length + abajo), ancho = W - izq - der;
+  for (const t of cada([0, 25, 50, 75, 100], ancho)) {
+    const x = izq + ancho * t / max;
+    el("line", { x1: x, x2: x, y1: arriba, y2: arriba + fila * RETRASO.length, class: t ? "malla" : "base" }, svg);
+    el("text", { x, y: arriba + fila * RETRASO.length + 18, "text-anchor": "middle", class: "eje" }, svg, t + " ms");
+  }
+  RETRASO.forEach(([nombre, v], i) => {
+    const y = arriba + i * fila + 12; let x = izq;
+    el("text", { x: 0, y: y + 15, class: "rotulo" }, svg, nombre);
+    const ultimo = v.reduce((u, t, k) => t > 0 ? k : u, 0);
+    v.forEach((t, k) => {
+      if (!t) return;
+      const w = ancho * t / max, hueco = k === ultimo ? 0 : 2;
+      const m = k === ultimo ? barra(svg, x, y, w, 22, "f" + (k + 1)) : el("rect", { x, y, width: Math.max(1, w - hueco), height: 22, class: "f" + (k + 1) }, svg);
+      tocable(m, num(t, t % 1 ? 1 : 0) + " ms", nombre + ", " + TRAMOS[k].toLowerCase());
+      x += w;
+    });
+    el("text", { x: x + 6, y: y + 15, class: "valor" }, svg, "≈ " + Math.round(v.reduce((a, b) => a + b)) + " ms");
+  });
+  tabla("t-retraso", ["Tramo (ms)", ...RETRASO.map(r => r[0])],
+    [...TRAMOS.map((t, k) => [t, ...RETRASO.map(r => num(r[1][k], r[1][k] % 1 ? 1 : 0))]), ["Total", ...RETRASO.map(r => num(r[1].reduce((a, b) => a + b), 1))]]);
+}
+
+const OPCIONES = [
+  { nombre: "Codificadores en el soporte", corto: "Codificadores", lineas: [["Módulo AS5600", 2, 6, "Tienda"], ["Placa ESP32", 1, 10, "Estimación"], ["Imanes, cables y piezas impresas", 1, 8, "Estimación"]] },
+  { nombre: "Prueba con 2 cámaras", corto: "Prueba, 2 cámaras", lineas: [["Cámara Global Shutter", 2, 52, "Tienda"], ["Lente de 6 mm", 2, 30, "Tienda"], ["Raspberry Pi 5 de 4 GB", 1, 95, "Estimación"], ["Fuente oficial de 27 W", 1, 14, "Tienda"], ["Tarjeta, cables de cámara, Pico, luz LED y cartulina azul", 1, 60, "Estimación"]] },
+  { nombre: "Zona con 4 AI Camera", corto: "Zona, 4 AI Camera", lineas: [["Raspberry Pi AI Camera", 4, 73, "Tienda"], ["Raspberry Pi 5 de 4 GB", 2, 95, "Estimación"], ["Fuente oficial de 27 W", 2, 14, "Tienda"], ["Marco de perfil de aluminio con escuadras", 1, 55, "Estimación"], ["Tarjetas, cables, switch, luz LED y base azul", 1, 95, "Estimación"]] },
+  { nombre: "Zona completa de 4 cámaras", corto: "Zona, 4 cámaras", lineas: [["Cámara Global Shutter", 4, 52, "Tienda"], ["Lente de 6 mm", 4, 30, "Tienda"], ["Raspberry Pi 5 de 4 GB", 2, 95, "Estimación"], ["Fuente oficial de 27 W", 2, 14, "Tienda"], ["Marco de perfil de aluminio con escuadras", 1, 55, "Estimación"], ["Tarjetas, cables, Pico, switch, luz LED y base azul", 1, 100, "Estimación"]] },
+  { nombre: "Zona de 4 cámaras con IA en las Raspberry", corto: "Zona con AI HAT+", lineas: [["Todo lo de la zona completa", 1, 701, "Suma"], ["Raspberry Pi AI HAT+ de 26 TOPS", 2, 101, "Tienda"]] },
+];
+OPCIONES.forEach(o => o.total = o.lineas.reduce((s, l) => s + l[1] * l[2], 0));
+function coste() {
+  const fila = 34, izq = estrecho() ? 118 : 150, der = 60, arriba = 6, abajo = 26, max = 1000;
+  const [svg, W] = lienzo("g-coste", arriba + fila * OPCIONES.length + abajo), ancho = W - izq - der;
+  for (const t of cada([0, 250, 500, 750, 1000], ancho)) {
+    const x = izq + ancho * t / max;
+    el("line", { x1: x, x2: x, y1: arriba, y2: arriba + fila * OPCIONES.length, class: t ? "malla" : "base" }, svg);
+    el("text", { x, y: arriba + fila * OPCIONES.length + 18, "text-anchor": "middle", class: "eje" }, svg, t.toLocaleString("es-ES") + " €");
+  }
+  OPCIONES.forEach((o, i) => {
+    const y = arriba + i * fila + 9, w = Math.max(3, ancho * o.total / max);
+    el("text", { x: 0, y: y + 12, class: "rotulo" }, svg, o.corto);
+    tocable(barra(svg, izq, y, w, 16, "f1"), "≈ " + o.total + " €", o.nombre);
+    el("text", { x: izq + w + 6, y: y + 12, class: "valor" }, svg, "≈ " + o.total + " €");
+  });
+}
+function presupuesto() {
+  const t = document.getElementById("t-presupuesto"); t.textContent = "";
+  const c = t.insertRow();
+  ["Partida", "Uds.", "Precio", "Importe", "Origen"].forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i > 0 && i < 4) th.className = "n"; c.appendChild(th); });
+  OPCIONES.forEach(o => {
+    const g = t.insertRow(); g.className = "grupo"; const td = g.insertCell(); td.colSpan = 5; td.textContent = o.nombre;
+    o.lineas.forEach(l => {
+      const r = t.insertRow();
+      [l[0], l[1], l[2] + " €", l[1] * l[2] + " €"].forEach((v, i) => { const d = r.insertCell(); d.textContent = v; if (i) d.className = "n"; });
+      const p = document.createElement("span"); p.className = "pildora"; p.textContent = l[3]; r.insertCell().appendChild(p);
+    });
+    const s = t.insertRow(); s.className = "total";
+    ["Total", "", "", "≈ " + o.total + " €", ""].forEach((v, i) => { const d = s.insertCell(); d.textContent = v; if (i > 0 && i < 4) d.className = "n"; });
+  });
+}
+function precisionTabla() {
+  const filas = [];
+  for (const esc of ["sin mano", "con mano"]) for (const c of CONF) {
+    const p = D.escenarios[esc].precision[c];
+    filas.push([c + ", " + esc, dec(p.lado_mm.mediana), dec(p.fondo_mm.mediana), dec(p.total_mm.mediana), dec(p.total_mm.p95), dec(p.giro_grados.mediana), dec(p.giro_grados.p95)]);
+  }
+  tabla("t-precision", ["Sistema", "De lado (mm)", "En fondo (mm)", "Total (mm)", "Total, peor 5 %", "Giro (°)", "Giro, peor 5 %"], filas);
+}
+function pintar() {
+  aguanta();
+  rango("g-pos", "total_mm", "Posición (mm)", "mm", 0.05, 50, [0.1, 1, 10], [1, 5]);
+  rango("g-giro", "giro_grados", "Giro (°)", "°", 0.1, 50, [0.1, 1, 10], []);
+  retraso(); coste();
+}
+presupuesto(); precisionTabla(); pintar();
+let espera; addEventListener("resize", () => { clearTimeout(espera); espera = setTimeout(pintar, 150); });
+</script>
