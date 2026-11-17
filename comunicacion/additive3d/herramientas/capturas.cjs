@@ -1,6 +1,6 @@
 // Una imagen por diapositiva, para revisarlas (Chromium de Playwright, sin tarjeta gráfica).
-//   node capturas.cjs URL CARPETA [lista]      lista: 0,1,…  y «6:3» es la diapositiva 6 en la etapa 3 de la simulación
-//                                              («6:1:4» la saca a los 4 s de empezar esa etapa); «12:f» es la
+//   node capturas.cjs URL CARPETA [lista]      lista: 0,1,…  y «7:3» es la diapositiva 7 en la etapa 3 de la simulación
+//                                              («7:1:4» la saca a los 4 s de empezar esa etapa); «12:f» es la
 //                                              diapositiva 12 con su segundo acto
 const { chromium } = require('playwright');
 

@@ -1,5 +1,5 @@
 // Lo que mueve la presentación: reveal, los tonos del fondo, los títulos, los contadores, el pie y la simulación.
-import { irA, ponEtapa, escucharCuenta, escucharEtapa } from './escena.js';
+import { irA, ponEtapa, escucharCuenta } from './escena.js';
 
 const exportar = location.search.includes('export');
 const secciones = [...document.querySelectorAll('.reveal .slides > section')];
@@ -35,29 +35,30 @@ function contar(el) {
 }
 
 // ------------------------------------------------------------------ simulación
-// Con «sola», la escena pasa de etapa por su cuenta y avisa (escucharEtapa): aquí solo se pinta la lista.
+// La simulación avanza con el botón de pasar diapositiva: cada etapa es un «fragmento» de reveal, así que el avance
+// pasa a la siguiente y el retroceso vuelve a la anterior. Después de la última, el avance pasa de diapositiva.
 const etapas = [...document.querySelectorAll('#etapas li')];
-function pintarEtapa(n) {
+let etapaPuesta = -2;
+function etapa(n) {
+  if (n === etapaPuesta) return;
+  etapaPuesta = n;
+  ponEtapa(n);
   etapas.forEach((li, i) => { li.classList.toggle('activa', i === n); li.classList.toggle('hecha', i < n); });
   document.body.classList.toggle('sim-en-marcha', n >= 0);
   document.body.classList.toggle('sim-contando', n >= 1);
 }
-function etapa(n, sola) {
-  ponEtapa(n, sola);
-  pintarEtapa(n);
-}
-escucharEtapa(pintarEtapa);
-window.__etapa = n => etapa(n, false);       // (para las capturas)
+const etapaDeLaDiapositiva = sec => sec.querySelectorAll('.fragment.visible').length - 1;
+window.__etapa = n => Reveal.navigateFragment(n);       // (para las capturas)
 escucharCuenta((n, total) => {
   const c = document.getElementById('sim-cuenta');
   c.querySelector('b').textContent = n;
   c.querySelector('span').textContent = total;
 });
-etapas.forEach((li, i) => li.addEventListener('click', () => etapa(i, false)));
+etapas.forEach((li, i) => li.addEventListener('click', () => Reveal.navigateFragment(i)));
 document.getElementById('reproducir').addEventListener('click', () => Reveal.next());
 document.addEventListener('keydown', ev => {
   if (Reveal.getCurrentSlide().id !== 'simulacion' || ev.ctrlKey || ev.altKey || ev.metaKey) return;
-  if (ev.key >= '1' && ev.key <= '6') etapa(+ev.key - 1, false);
+  if (ev.key >= '1' && ev.key <= '6') Reveal.navigateFragment(+ev.key - 1);
 });
 
 
@@ -188,12 +189,11 @@ function alCambiar(ev) {
   document.getElementById('pie-num').textContent = `${String(i + 1).padStart(2, '0')} / ${String(secciones.length).padStart(2, '0')}`;
   sec.querySelectorAll('[data-hasta]').forEach(contar);
   red.al(sec.id === 'red');
-  if (sec.id === 'simulacion') etapa(sec.querySelector('.fragment.visible') ? 0 : -1, !!sec.querySelector('.fragment.visible'));
-  else etapa(-1, false);
+  etapa(sec.id === 'simulacion' ? etapaDeLaDiapositiva(sec) : -1);
 }
 function alFragmento(ev, visible) {
   const sec = Reveal.getCurrentSlide();
-  if (sec.id === 'simulacion') etapa(visible ? 0 : -1, visible);
+  if (sec.id === 'simulacion') etapa(etapaDeLaDiapositiva(sec));
   if (sec.id === 'cierre') {
     sec.classList.toggle('acto2', visible);
     tono(visible ? 'oscuro' : sec.dataset.tono);

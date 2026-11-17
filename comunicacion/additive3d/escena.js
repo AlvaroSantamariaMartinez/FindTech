@@ -189,12 +189,8 @@ const SUBE_EN = 5.2;        // segundos que tarda el barrido en recorrer el cere
 const ABRE_EN = 7.0;        // cuándo se aclara lo de fuera para enseñar lo de dentro
 
 export function irA(m) { if (m !== modo) { modo = m; tModo = 0; } if (m !== 'sim') ponEtapa(-1); }
-// Con «sola», la simulación pasa de etapa por su cuenta, con el reloj de la propia escena (lo que dura cada una).
-const DURA = [3.4, 9.5, 5.2, 4.6, 6.6];
-let sola = false, alEtapa = () => {};
-export function escucharEtapa(f) { alEtapa = f; }
-export function ponEtapa(n, auto = false) {
-  etapa = n; tEtapa = 0; vistas = -1; sola = auto;
+export function ponEtapa(n) {
+  etapa = n; tEtapa = 0; vistas = -1;
   if (n < 1) alContar(0, secciones.length);
   if (n >= 2) alContar(secciones.length, secciones.length);
 }
@@ -213,7 +209,6 @@ function fotograma() {
   tEtapa += dt;
   tModo += dt;
   const sim = modo === 'sim';
-  if (sim && sola && etapa >= 0 && etapa < DURA.length && tEtapa > DURA[etapa]) { ponEtapa(etapa + 1, true); alEtapa(etapa); }
 
   // la cámara y dónde se pone el modelo (a la derecha del texto)
   if (sim && etapa <= 0) camObj.set(0, 1.9, 5.1); else if (sim && etapa === 1) camObj.set(0, 1.5, 4.9); else camObj.set(0, 0.28, 4.8);

@@ -10,8 +10,8 @@ que se abre con doble clic en Chrome o Edge, sin servidor y sin internet.
 
 - **F**: pantalla completa. **S**: vista del orador, con las notas.
 - Flechas o el mando de presentar: siguiente y anterior.
-- En «Simulación» (la 7), el primer avance le da al play y la simulación corre sola (unos 30 s). Con las teclas **1** a
-  **6**, o tocando una etapa, se salta a esa etapa y se queda parada en ella. El siguiente avance pasa de diapositiva.
+- En «Simulación» (la 8), cada avance pasa a la etapa siguiente y el retroceso vuelve a la anterior. Con las teclas
+  **1** a **6**, o tocando una etapa, se salta a ella. Después de la última etapa, el avance pasa de diapositiva.
 - En la última, el primer avance cambia al cierre («Ayúdanos a mejorar la medicina.»).
 
 `construir.py artefacto` prepara en `salida/artefacto-additive3d` la copia para publicarla como página en línea.

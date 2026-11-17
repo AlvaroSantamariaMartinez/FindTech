@@ -102,7 +102,7 @@ def capturas(archivo: Path):
     carpeta = SALIDA / "capturas-additive3d"
     carpeta.mkdir(parents=True, exist_ok=True)
     subprocess.run(["node", str(AQUI / "herramientas" / "capturas.cjs"), archivo.as_uri(), str(carpeta),
-                    "0,1,2,3,4,5,6,6:0,6:1,6:2,6:3,6:4,6:5,7,8,9,10,11,12,12:f"], check=True, cwd=AQUI / "herramientas")
+                    "0,1,2,3,4,5,6,7,7:0,7:1,7:2,7:3,7:4,7:5,8,9,10,11,12,12:f"], check=True, cwd=AQUI / "herramientas")
     print(f"Revisa cada una: {carpeta}")
 
 
