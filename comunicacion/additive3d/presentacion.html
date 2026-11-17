@@ -135,12 +135,59 @@
           </ol>
         </div>
         <button class="reproducir" id="reproducir" type="button" aria-label="Reproducir la simulación"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></button>
-        <p class="cuenta" id="sim-cuenta"><b>0</b> de <span>89</span> estructuras</p>
+        <p class="cuenta" id="sim-cuenta"><b>0</b> de <span>27</span> estructuras</p>
         <span class="fragment" data-fragment-index="0"></span>
-        <aside class="notes">Dar al play (el siguiente clic) después de haber explicado el proceso. La simulación avanza sola; con las teclas 1 a 6, o tocando una etapa, se detiene en esa etapa. Dar peso a la segmentación. Los modelos son reales: salen de un TAC público de muestra, no de un paciente.</aside>
+        <aside class="notes">Dar al play (el siguiente clic) después de haber explicado el proceso. La simulación avanza sola; con las teclas 1 a 6, o tocando una etapa, se detiene en esa etapa. Dar peso a la segmentación. El cerebro es real: sale de una resonancia pública de muestra, no de un paciente.</aside>
       </section>
 
-      <!-- 8 · Realidad mixta -->
+      <!-- 8 · Cómo segmenta una red neuronal -->
+      <section id="red" data-tono="blanco" data-escena="nada">
+        <h2 class="titulo pequeno" style="left:84px; top:56px;"><span class="l">Cómo segmenta una red neuronal</span></h2>
+        <p class="nota morado sube" style="left:88px; top:172px; --i:2">Aprende con imágenes ya etiquetadas. Después etiqueta sola las nuevas.</p>
+        <canvas id="red-lienzo" class="sube" width="3520" height="1200" style="left:80px; top:238px; width:1760px; height:600px; --i:3" aria-label="Una red neuronal en forma de U: comprime la imagen, la vuelve a ampliar y etiqueta cada punto"></canvas>
+        <ol class="red-pasos sube" style="left:88px; top:858px; --i:5" id="red-pasos">
+          <li><b>Mira</b><span>Recorre la imagen con filtros que detectan bordes y texturas.</span></li>
+          <li><b>Comprime</b><span>La reduce paso a paso hasta saber qué estructuras hay.</span></li>
+          <li><b>Etiqueta</b><span>La amplía de nuevo y decide, punto a punto, a qué estructura pertenece.</span></li>
+        </ol>
+        <aside class="notes">Dar peso a la segmentación. El corte y sus colores son reales: una resonancia pública de cabeza y lo que devuelve la red. Explicar exactitud y precisión.</aside>
+      </section>
+
+      <!-- 9 · Protección de datos -->
+      <section id="datos" data-tono="salvia" data-escena="nada">
+        <div class="col" style="left:86px; top:100px; width:930px; gap:36px;">
+          <h1 class="titulo mediano"><span class="l">Protección</span><span class="l">de datos</span></h1>
+          <ul class="pilares">
+            <li class="sube" style="--i:3">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="9" width="36" height="24" rx="4" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M17 41h14M24 33v8" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+              <div><h4>Procesado en local</h4><p>Las imágenes se analizan en el propio ordenador, sin subirlas a internet.</p></div>
+            </li>
+            <li class="sube" style="--i:4">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="17" r="8" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M9 41c1.500-9 7.500-13 15-13s13.500 4 15 13" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="M7 7l34 34" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+              <div><h4>Anonimización</h4><p>Fuera el nombre, los identificadores, la fecha de nacimiento, el centro y los médicos.</p></div>
+            </li>
+            <li class="sube" style="--i:5">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="17" width="17" height="14" rx="7" fill="none" stroke="currentColor" stroke-width="3.5"/><rect x="27" y="17" width="17" height="14" rx="7" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M24 8v6M24 34v6" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/></svg>
+              <div><h4>Sin trazabilidad</h4><p>El modelo y sus archivos no llevan ningún dato que permita llegar al paciente.</p></div>
+            </li>
+          </ul>
+        </div>
+        <div class="ficha entra" style="left:1120px; top:150px; --i:2">
+          <p class="ceja">Estudio DICOM</p>
+          <dl>
+            <div style="--k:0"><dt>Nombre</dt><dd><i style="width:250px"></i><b>eliminado</b></dd></div>
+            <div style="--k:1"><dt>Identificador</dt><dd><i style="width:170px"></i><b>eliminado</b></dd></div>
+            <div style="--k:2"><dt>Nacimiento</dt><dd><i style="width:140px"></i><b>eliminado</b></dd></div>
+            <div style="--k:3"><dt>Centro y médicos</dt><dd><i style="width:220px"></i><b>eliminados</b></dd></div>
+            <div style="--k:4"><dt>Fechas del estudio</dt><dd><i style="width:140px"></i><b>desplazadas</b></dd></div>
+            <div class="queda" style="--k:5"><dt>Imagen</dt><dd><b>intacta</b></dd></div>
+          </dl>
+          <p class="candado"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="11" rx="2.5" fill="currentColor"/></svg>Los datos no salen del equipo</p>
+        </div>
+        <aside class="notes">Privacidad de los datos: todo se procesa en local y los estudios se anonimizan al importarlos.</aside>
+      </section>
+
+      <!-- 10 · Realidad mixta -->
       <section id="mixta" data-tono="blanco" data-escena="nada">
         <img class="foto desde-abajo" src="img/manos.webp" alt="Manos con un corazón impreso y sus vasos resaltados" style="left:549px; top:236px; width:1371px; --i:2;">
         <i class="pulso" style="left:1190px; top:470px;"></i>
@@ -154,7 +201,7 @@
         <aside class="notes">Si llevamos las gafas y una pieza, enseñarlas aquí.</aside>
       </section>
 
-      <!-- 9 · Por qué somos diferentes -->
+      <!-- 11 · Por qué somos diferentes -->
       <section id="diferentes" data-tono="salvia" data-escena="nada">
         <div class="col" style="left:78px; top:130px; width:1150px;">
           <h1 class="titulo"><span class="l">Por qué somos</span><span class="l">diferentes</span></h1>
@@ -169,7 +216,7 @@
         <aside class="notes">Tacto real y anatomía del paciente en un mismo producto. Patente solicitada.</aside>
       </section>
 
-      <!-- 10 · En solo 6 meses -->
+      <!-- 12 · En solo 6 meses -->
       <section id="meses" data-tono="blanco" data-escena="nada">
         <div class="col" style="left:88px; top:230px; width:900px; gap:14px;">
           <p class="ceja sube" style="--i:0">Talento joven</p>
@@ -186,7 +233,7 @@
         <aside class="notes">Poner en valor el talento joven: en solo 6 meses…</aside>
       </section>
 
-      <!-- 11 · Cierre -->
+      <!-- 13 · Cierre -->
       <section id="cierre" data-tono="salvia" data-escena="nada">
         <div class="acto uno">
           <h1 class="titulo" style="left:87px; top:150px;"><span class="l">Entramos</span><span class="l">con una idea.</span><span class="l">Salimos</span><span class="l morado">con una empresa.</span></h1>
@@ -207,7 +254,7 @@
   <div class="pie" aria-hidden="true">
     <span class="pie-marca">Additive 3D Engineering</span>
     <div class="pie-barra"><i id="pie-avance"></i></div>
-    <span id="pie-num">01 / 11</span>
+    <span id="pie-num">01 / 13</span>
   </div>
 
   <script src="../presentacion/vendor/reveal.js"></script>

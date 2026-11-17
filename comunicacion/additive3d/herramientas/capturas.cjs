@@ -1,6 +1,7 @@
 // Una imagen por diapositiva, para revisarlas (Chromium de Playwright, sin tarjeta gráfica).
-//   node capturas.cjs URL CARPETA [lista]      lista: 0,1,…  y «6:3» es la diapositiva 6 en la etapa 3 de la simulación;
-//                                              «10:f» es la diapositiva 10 con su segundo acto
+//   node capturas.cjs URL CARPETA [lista]      lista: 0,1,…  y «6:3» es la diapositiva 6 en la etapa 3 de la simulación
+//                                              («6:1:4» la saca a los 4 s de empezar esa etapa); «12:f» es la
+//                                              diapositiva 12 con su segundo acto
 const { chromium } = require('playwright');
 
 (async () => {
@@ -16,12 +17,12 @@ const { chromium } = require('playwright');
     const n = await p.evaluate(() => document.querySelectorAll('.reveal .slides > section').length);
     const pasos = (lista || [...Array(n).keys()].join(',')).split(',');
     for (const paso of pasos) {
-      const [i, extra] = paso.split(':');
+      const [i, extra, espera] = paso.split(':');
       await p.evaluate(i => Reveal.slide(i), +i);
       if (extra === 'f') await p.evaluate(() => Reveal.nextFragment());
       else if (extra !== undefined) await p.evaluate(e => window.__etapa(e), +extra);
-      await p.waitForTimeout(extra !== undefined && extra !== 'f' ? 7000 : 5000);
-      const nombre = `d${String(+i + 1).padStart(2, '0')}${extra !== undefined ? '-' + extra : ''}`;
+      await p.waitForTimeout(espera ? +espera * 1000 : extra !== undefined && extra !== 'f' ? 7000 : 5000);
+      const nombre = `d${String(+i + 1).padStart(2, '0')}${extra !== undefined ? '-' + extra : ''}${espera ? '-' + espera + 's' : ''}`;
       await p.screenshot({ path: `${destino}/${nombre}.png` });
       console.log('  ', nombre);
     }
