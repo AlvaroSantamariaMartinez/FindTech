@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Additive 3D Engineering</title>
+  <link rel="stylesheet" href="../presentacion/vendor/reset.css">
+  <link rel="stylesheet" href="../presentacion/vendor/reveal.css">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="tono-blanco">
+  <div class="fondo" aria-hidden="true"><i class="mancha m1"></i><i class="mancha m2"></i><i class="trama"></i></div>
+  <canvas id="escena3d" aria-label="Modelos 3D de anatomía real"></canvas>
+
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- 1 · Portada -->
+      <section id="portada" data-tono="blanco" data-escena="cerebro">
+        <h1 class="titulo enorme" style="left:83px; top:200px;"><span class="l">Entrenar</span><span class="l">la cirugía</span><span class="l">antes de operar</span></h1>
+        <i class="raya" style="left:90px; top:748px; width:470px; --i:4"></i>
+        <p class="firma sube" style="left:90px; top:792px; --i:5">Additive 3D Engineering</p>
+        <aside class="notes">Apertura: ¿alguien se subiría a un avión con un piloto que nunca ha pilotado ese avión? ¿Y alguien entraría al quirófano de un cirujano que nunca ha hecho esa cirugía?</aside>
+      </section>
+
+      <!-- 2 · El problema -->
+      <section id="problema" data-tono="salvia" data-escena="nada">
+        <div class="col" style="left:84px; top:120px; width:960px;">
+          <h1 class="titulo"><span class="l">El problema</span></h1>
+          <p class="frase sube" style="--i:2">Los cirujanos practican con modelos genéricos o con animales.</p>
+          <p class="frase morado sube" style="--i:3">Ninguno se parece a su paciente.</p>
+          <i class="raya en-flujo" style="width:420px; --i:4"></i>
+          <p class="nota sube" style="--i:5">Falta práctica realista y repetible</p>
+          <p class="cifra sube" style="--i:6"><span data-hasta="2200" data-miles>0</span> M$</p>
+          <p class="nota sube" style="--i:7">mercado en 2032</p>
+        </div>
+        <img class="foto entra flota" src="img/corazon.webp" alt="Corazón impreso en 3D" style="left:1150px; top:105px; height:870px; --i:2; --prof:14px;">
+        <aside class="notes">Ir al grano. Hoy el médico practica en modelos generalistas o en animales.</aside>
+      </section>
+
+      <!-- 3 · Prototipos -->
+      <section id="prototipos" data-tono="blanco" data-escena="nada">
+        <div class="col" style="left:88px; top:130px; width:960px;">
+          <h1 class="titulo"><span class="l">Nuestros</span><span class="l">prototipos</span><span class="l">anatómicos</span></h1>
+          <ul class="puntos">
+            <li class="sube" style="--i:4">Piel, cartílago y hueso con tacto real</li>
+            <li class="sube" style="--i:5">Se cortan y se suturan</li>
+            <li class="sube" style="--i:6">Prototipo de próstata con validación profesional</li>
+          </ul>
+        </div>
+        <div class="foto-marcas entra flota" style="left:1090px; top:140px; width:720px; --i:2; --prof:12px;">
+          <img src="img/nariz.webp" alt="Corte de un prototipo de nariz con sus capas">
+          <span class="marca izq" style="left:15%; top:87%; --i:7"><b>Piel</b></span>
+          <span class="marca izq" style="left:45%; top:50%; --i:8"><b>Cartílago</b></span>
+          <span class="marca der" style="left:58%; top:43%; --i:9"><b>Hueso</b></span>
+        </div>
+        <aside class="notes">Jugar con lo que llevemos y darle protagonismo: enseñar el prototipo en la mano mientras se explica.</aside>
+      </section>
+
+      <!-- 4 · Dos líneas (usos) -->
+      <section id="lineas" data-tono="salvia" data-escena="nada">
+        <h1 class="titulo mediano" style="left:86px; top:105px;"><span class="l">Dos líneas de producto</span></h1>
+        <div class="tarjeta desde-izq" style="left:86px; top:325px; --i:2">
+          <p class="ceja">Académico</p>
+          <h3>Línea asequible</h3>
+          <p>Para docencia.</p>
+          <img class="flota" src="img/pelvis.webp" alt="" style="--prof:8px;">
+        </div>
+        <div class="tarjeta oscura desde-der" style="left:1004px; top:325px; --i:3">
+          <p class="ceja">Profesional</p>
+          <h3>Alta fidelidad</h3>
+          <p>Para profesionales, con un coste más elevado.</p>
+          <img class="flota" src="img/corazon2.webp" alt="" style="--prof:8px;">
+        </div>
+        <div class="franja sube" style="left:86px; top:835px; --i:5">
+          <span class="nota">Varias líneas de investigación</span>
+          <span class="chip">Impresión en hidrogel</span><span class="chip">Realidad mixta</span><span class="chip">Próstata</span>
+        </div>
+        <aside class="notes">Ordenar los usos: académico y profesional. Línea asequible para docencia y línea de alta fidelidad, con un coste más elevado, para profesionales. Varias líneas de investigación.</aside>
+      </section>
+
+      <!-- 5 · Material de desarrollo -->
+      <section id="material" data-tono="blanco" data-escena="nada">
+        <h1 class="titulo mediano" style="left:86px; top:95px;"><span class="l">Material de</span><span class="l">desarrollo</span></h1>
+        <p class="pastilla sube" style="left:90px; top:392px; --i:3">La fabricación aditiva es nuestro punto fuerte</p>
+        <div class="col" style="left:90px; top:520px; width:800px; gap:22px;">
+          <h3 class="morado sube" style="--i:4">Granja de impresoras</h3>
+          <div class="granja sube" style="--i:5">
+            <p class="cifra">+<span data-hasta="40">0</span></p>
+            <div class="rejilla" id="rejilla-impresoras" aria-hidden="true"></div>
+          </div>
+          <p class="texto sube" style="--i:6">Más de 40 impresoras para crear moldes y prototipos.</p>
+        </div>
+        <i class="raya vertical" style="left:955px; top:520px; height:440px; --i:4"></i>
+        <div class="col" style="left:1016px; top:520px; width:800px; gap:22px;">
+          <h3 class="morado sube" style="--i:6">Impresora en hidrogel</h3>
+          <p class="texto sube" style="--i:7">Prototipo de impresora 3D de órganos en hidrogel, con biomaterial como matriz orgánica.</p>
+        </div>
+        <img class="foto entra flota" src="img/impresora.webp" alt="Prototipo de impresora 3D en una cubeta de hidrogel" style="left:1400px; top:34px; width:440px; --i:3; --prof:10px;">
+        <aside class="notes">Destacar la experiencia en impresión aditiva como punto fuerte.</aside>
+      </section>
+
+      <!-- 6 · Cómo lo hacemos: el todo -->
+      <section id="como" data-tono="salvia" data-escena="nada">
+        <h2 class="titulo pequeno" style="left:84px; top:62px;"><span class="l">Cómo lo hacemos</span></h2>
+        <p class="nota sube" style="left:88px; top:186px; --i:2">Del escáner del paciente al modelo para operar</p>
+        <div class="tuberia">
+          <i class="hilo"></i>
+          <div class="paso" style="--i:3"><b class="nodo">01</b><h4>Imagen</h4><ul><li>Resonancia y TAC</li><li>Lectura de DICOM</li><li>Datos anonimizados</li></ul></div>
+          <div class="paso clave" style="--i:4"><b class="nodo">02</b><p class="ceja">El paso clave</p><h4>Segmentación</h4><ul><li>Redes neuronales</li><li>Varias redes y un árbitro</li><li>Corrección con clics</li><li>Tumor, vasos y hueso</li></ul></div>
+          <div class="paso" style="--i:5"><b class="nodo">03</b><h4>Modelo 3D</h4><ul><li>Malla de cada estructura</li><li>Escala de impresión</li><li>STL y 3MF</li></ul></div>
+          <div class="paso" style="--i:6"><b class="nodo">04</b><h4>Molde</h4><ul><li>Molde por piezas</li><li>Vasos en relieve</li><li>Tornillos y montaje</li></ul></div>
+          <div class="paso" style="--i:7"><b class="nodo">05</b><h4>Fabricación</h4><ul><li>Impresión 3D</li><li>Colada de silicona</li><li>Piel, cartílago y hueso</li></ul></div>
+          <div class="paso" style="--i:8"><b class="nodo">06</b><h4>Gemelo digital</h4><ul><li>Forma exacta de la pieza</li><li>Seguimiento con las gafas</li><li>Capas internas a la vista</li></ul></div>
+        </div>
+        <p class="privacidad sube" style="left:88px; top:938px; --i:10">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10V7a5 5 0 0 1 10 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="4.5" y="10" width="15" height="11" rx="2.5" fill="currentColor"/></svg>
+          <span><strong>Privacidad:</strong> los datos del paciente se anonimizan antes de procesarlos.</span>
+        </p>
+        <aside class="notes">Primero se explica el proceso entero y después se da al play de la simulación. Elegir dónde detenerse y dar peso a la segmentación. Explicar exactitud y precisión. Privacidad de los datos.</aside>
+      </section>
+
+      <!-- 7 · Simulación -->
+      <section id="simulacion" data-tono="salvia" data-escena="sim">
+        <div class="col" style="left:86px; top:84px; width:660px; gap:0;">
+          <p class="ceja sube" style="--i:0">Simulación</p>
+          <h2 class="titulo pequeno"><span class="l">Del paciente</span><span class="l">al modelo</span></h2>
+          <ol class="etapas sube" style="--i:3" id="etapas">
+            <li data-etapa="0"><b>01</b><div><h4>Imagen</h4><p>Resonancia y TAC · Lectura de DICOM · Datos anonimizados</p></div></li>
+            <li data-etapa="1" class="clave"><b>02</b><div><h4>Segmentación</h4><p>Redes neuronales · Varias redes y un árbitro · Corrección con clics · Tumor, vasos y hueso</p></div></li>
+            <li data-etapa="2"><b>03</b><div><h4>Modelo 3D</h4><p>Malla de cada estructura · Escala de impresión · STL y 3MF</p></div></li>
+            <li data-etapa="3"><b>04</b><div><h4>Molde</h4><p>Molde por piezas · Vasos en relieve · Tornillos y montaje</p></div></li>
+            <li data-etapa="4"><b>05</b><div><h4>Fabricación</h4><p>Impresión 3D · Colada de silicona · Piel, cartílago y hueso</p></div></li>
+            <li data-etapa="5"><b>06</b><div><h4>Gemelo digital</h4><p>Forma exacta de la pieza · Seguimiento con las gafas · Capas internas a la vista</p></div></li>
+          </ol>
+        </div>
+        <button class="reproducir" id="reproducir" type="button" aria-label="Reproducir la simulación"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></button>
+        <p class="cuenta" id="sim-cuenta"><b>0</b> de <span>89</span> estructuras</p>
+        <span class="fragment" data-fragment-index="0"></span>
+        <aside class="notes">Dar al play (el siguiente clic) después de haber explicado el proceso. La simulación avanza sola; con las teclas 1 a 6, o tocando una etapa, se detiene en esa etapa. Dar peso a la segmentación. Los modelos son reales: salen de un TAC público de muestra, no de un paciente.</aside>
+      </section>
+
+      <!-- 8 · Realidad mixta -->
+      <section id="mixta" data-tono="blanco" data-escena="nada">
+        <img class="foto desde-abajo" src="img/manos.webp" alt="Manos con un corazón impreso y sus vasos resaltados" style="left:549px; top:236px; width:1371px; --i:2;">
+        <i class="pulso" style="left:1190px; top:470px;"></i>
+        <img class="foto desde-arriba flota" src="img/gafas.webp" alt="Gafas de realidad mixta" style="left:1357px; top:132px; width:563px; --i:4; --prof:16px;">
+        <div class="col" style="left:86px; top:150px; width:640px;">
+          <h1 class="titulo mediano"><span class="l">Realidad mixta</span></h1>
+          <i class="raya en-flujo" style="width:212px; --i:2"></i>
+          <p class="texto sube" style="--i:3">Explora el modelo con tus manos y visualiza estructuras internas y detalles que no se podrían conseguir con una impresión.</p>
+          <p class="destacado sube" style="--i:5">Software nativo en desarrollo</p>
+        </div>
+        <aside class="notes">Si llevamos las gafas y una pieza, enseñarlas aquí.</aside>
+      </section>
+
+      <!-- 9 · Por qué somos diferentes -->
+      <section id="diferentes" data-tono="salvia" data-escena="nada">
+        <div class="col" style="left:78px; top:130px; width:1150px;">
+          <h1 class="titulo"><span class="l">Por qué somos</span><span class="l">diferentes</span></h1>
+        </div>
+        <div class="union" style="left:90px; top:560px;">
+          <span class="pieza a">Tacto real</span><span class="mas">+</span><span class="pieza b">Anatomía del paciente</span>
+        </div>
+        <p class="frase sube" style="left:90px; top:700px; --i:9">en un mismo producto</p>
+        <p class="sello" style="left:90px; top:840px; --i:11">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Patente solicitada</p>
+        <img class="foto entra flota" src="img/corazon2.webp" alt="Corazón impreso en 3D" style="left:1250px; top:130px; height:850px; --i:2; --prof:14px;">
+        <aside class="notes">Tacto real y anatomía del paciente en un mismo producto. Patente solicitada.</aside>
+      </section>
+
+      <!-- 10 · En solo 6 meses -->
+      <section id="meses" data-tono="blanco" data-escena="nada">
+        <div class="col" style="left:88px; top:230px; width:900px; gap:14px;">
+          <p class="ceja sube" style="--i:0">Talento joven</p>
+          <p class="frase sube" style="--i:1; font-size:88px;">En solo</p>
+          <p class="gigante sube" style="--i:2"><span data-hasta="6">0</span> meses</p>
+        </div>
+        <ul class="hitos" style="left:1030px; top:215px;">
+          <li style="--i:4">Prototipos con tacto real</li>
+          <li style="--i:5">Prototipo de próstata con validación profesional</li>
+          <li style="--i:6">Prototipo de impresora en hidrogel</li>
+          <li style="--i:7">Realidad mixta en desarrollo</li>
+          <li style="--i:8">Patente solicitada</li>
+        </ul>
+        <aside class="notes">Poner en valor el talento joven: en solo 6 meses…</aside>
+      </section>
+
+      <!-- 11 · Cierre -->
+      <section id="cierre" data-tono="salvia" data-escena="nada">
+        <div class="acto uno">
+          <h1 class="titulo" style="left:87px; top:150px;"><span class="l">Entramos</span><span class="l">con una idea.</span><span class="l">Salimos</span><span class="l morado">con una empresa.</span></h1>
+          <img class="foto entra flota" src="img/pelvis.webp" alt="Pelvis impresa en 3D" style="left:1230px; top:300px; width:600px; --i:3; --prof:12px;">
+        </div>
+        <div class="acto dos">
+          <h1 class="titulo enorme" style="left:86px; top:150px;"><span class="l">Ayúdanos</span><span class="l">a mejorar</span><span class="l">la medicina.</span></h1>
+          <i class="raya" style="left:92px; top:742px; width:470px; --i:4"></i>
+          <p class="firma" style="left:92px; top:786px;">Gracias.<br>Additive 3D Engineering</p>
+        </div>
+        <span class="fragment" data-fragment-index="0"></span>
+        <aside class="notes">Llamada a la acción. Final potente y contundente: ayúdanos a mejorar la medicina.</aside>
+      </section>
+
+    </div>
+  </div>
+
+  <div class="pie" aria-hidden="true">
+    <span class="pie-marca">Additive 3D Engineering</span>
+    <div class="pie-barra"><i id="pie-avance"></i></div>
+    <span id="pie-num">01 / 11</span>
+  </div>
+
+  <script src="../presentacion/vendor/reveal.js"></script>
+  <script src="../presentacion/vendor/notes.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

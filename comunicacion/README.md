@@ -7,6 +7,7 @@ Presentaciones y dosieres del proyecto. El producto está en `../mranalyzer`; es
 | Presentación holográfica (reveal.js + Three.js, guion en las notas) | `presentacion/` | `salida/MRAnalyzer-presentacion-<versión>.zip` |
 | Dosier para inversores (A4) | `dosier/dosier.html` + `dosier.css` | `salida/MRAnalyzer-dosier-<versión>.pdf` |
 | Cifras de los dos | `datos.json` | — |
+| Presentación de Additive 3D Engineering (mismo motor, un solo archivo) | `additive3d/` (ver su `LEEME.md`) | `salida/Additive3D-presentacion.html` |
 
 `salida/` no se guarda en git: se vuelve a generar.
 

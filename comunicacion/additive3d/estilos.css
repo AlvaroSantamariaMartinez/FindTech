@@ -1,0 +1,247 @@
+/* Presentación de Additive 3D Engineering. Lienzo de 1920 × 1080 (reveal lo escala). Colores del PowerPoint. */
+@font-face {
+  font-family: "Inter";
+  src: url(fuentes/inter-latin-wght-normal.woff2) format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --tinta: #063f3b;
+  --morado: #6422b8;
+  --lila: #cdb5f5;
+  --salvia: #e2ebe7;
+  --blanco: #fdfdfd;
+  --oscuro: #05302d;
+  --suave: cubic-bezier(.2, .7, .2, 1);
+  --px: 0; --py: 0;          /* el ratón, de −1 a 1: las fotos se mueven un poco con él */
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--blanco);
+  color: var(--tinta);
+  font-family: "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  overflow: hidden;
+  transition: background-color 1s ease, color .8s ease;
+}
+body.tono-salvia { background: var(--salvia); }
+body.tono-oscuro { background: var(--oscuro); --tinta: #f3f7f5; --morado: #cdb5f5; }
+
+/* ------------------------------------------------------------------ fondo que se mueve */
+.fondo { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.mancha { position: absolute; width: 62vw; height: 62vw; border-radius: 50%; filter: blur(90px); opacity: .5; transition: opacity 1s; }
+.mancha.m1 { background: radial-gradient(circle, rgba(100, 34, 184, .20), rgba(100, 34, 184, 0) 65%); left: 48vw; top: -22vw; animation: deriva1 26s ease-in-out infinite alternate; }
+.mancha.m2 { background: radial-gradient(circle, rgba(6, 63, 59, .16), rgba(6, 63, 59, 0) 65%); left: -22vw; top: 30vh; animation: deriva2 32s ease-in-out infinite alternate; }
+body.tono-oscuro .mancha.m1 { background: radial-gradient(circle, rgba(150, 90, 255, .45), rgba(150, 90, 255, 0) 65%); opacity: .8; }
+body.tono-oscuro .mancha.m2 { background: radial-gradient(circle, rgba(40, 170, 150, .30), rgba(40, 170, 150, 0) 65%); }
+.trama {
+  position: absolute; inset: -60px; opacity: .5;
+  background-image: radial-gradient(circle, rgba(6, 63, 59, .22) 1.2px, transparent 1.6px);
+  background-size: 46px 46px;
+  -webkit-mask-image: linear-gradient(115deg, transparent 35%, #000 100%);
+  mask-image: linear-gradient(115deg, transparent 35%, #000 100%);
+  animation: trama 40s linear infinite;
+}
+body.tono-oscuro .trama { background-image: radial-gradient(circle, rgba(205, 181, 245, .30) 1.2px, transparent 1.6px); }
+@keyframes deriva1 { to { transform: translate(-14vw, 12vh) scale(1.15); } }
+@keyframes deriva2 { to { transform: translate(16vw, -14vh) scale(1.2); } }
+@keyframes trama { to { transform: translate(46px, 46px); } }
+
+#escena3d { position: fixed; inset: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; }
+.reveal { z-index: 2; color: inherit; font-family: inherit; }
+.reveal .slides { text-align: left; }
+.reveal .slides > section { width: 1920px; height: 1080px; padding: 0; top: 0 !important; }
+.reveal .controls { color: var(--morado); }
+
+/* ------------------------------------------------------------------ piezas de las diapositivas */
+.reveal section > *, .reveal section .acto > * { position: absolute; margin: 0; }
+.reveal section .acto { inset: 0; }
+.reveal section .col { display: flex; flex-direction: column; gap: 30px; align-items: flex-start; }
+.reveal section .col > * { position: static; margin: 0; }
+.reveal aside.notes { display: none; }
+
+.reveal .titulo { font-weight: 700; font-size: 132px; line-height: 1.07; letter-spacing: -.035em; color: var(--tinta); text-transform: none; }
+.reveal .titulo.enorme { font-size: 152px; }
+.reveal .titulo.mediano { font-size: 118px; }
+.reveal .titulo.pequeno { font-size: 86px; }
+.titulo .l { display: block; overflow: hidden; padding-bottom: .1em; margin-bottom: -.1em; white-space: nowrap; }
+.titulo .l > span { display: inline-block; transform: translateY(112%); }
+section.present .titulo .l > span { animation: sale 1s var(--suave) both; animation-delay: calc(var(--n) * 130ms + 150ms); }
+.morado, .reveal .titulo .morado { color: var(--morado); }
+
+.reveal p, .reveal li, .reveal h3, .reveal h4 { color: var(--tinta); font-family: inherit; text-transform: none; letter-spacing: -.012em; }
+.frase { font-size: 56px; font-weight: 650; line-height: 1.18; letter-spacing: -.02em; }
+.frase.morado { color: var(--morado); }
+.texto { font-size: 38px; font-weight: 450; line-height: 1.45; }
+.nota { font-size: 36px; font-weight: 650; }
+.ceja { font-size: 28px; font-weight: 700; letter-spacing: .14em !important; text-transform: uppercase !important; color: var(--morado) !important; }
+.firma { font-size: 42px; font-weight: 700; color: var(--morado) !important; line-height: 1.35; }
+.destacado { font-size: 52px; font-weight: 700; color: var(--morado) !important; line-height: 1.3; }
+.cifra { font-size: 132px; font-weight: 700; color: var(--morado) !important; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.reveal h3 { font-size: 64px; font-weight: 700; line-height: 1.1; letter-spacing: -.03em; }
+.reveal h3.morado { color: var(--morado); }
+
+.raya { display: block; height: 4px; border-radius: 2px; background: var(--morado); transform: scaleX(0); transform-origin: left; }
+.raya.vertical { width: 4px; transform: scaleY(0); transform-origin: top; }
+.raya.en-flujo { position: static !important; }
+section.present .raya, section.acto2 .acto.dos .raya { animation: traza 1s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 250ms); }
+
+.sube, .entra, .desde-izq, .desde-der, .desde-abajo, .desde-arriba { opacity: 0; }
+section.present .sube { animation: sube .9s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 250ms); }
+section.present .entra { animation: entra 1.3s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+section.present .desde-izq { animation: desde-izq 1s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+section.present .desde-der { animation: desde-der 1s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+section.present .desde-abajo { animation: desde-abajo 1.4s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+section.present .desde-arriba { animation: desde-arriba 1.4s var(--suave) both; animation-delay: calc(var(--i, 0) * 120ms + 200ms); }
+@keyframes sale { to { transform: none; } }
+@keyframes traza { to { transform: none; } }
+@keyframes sube { from { opacity: 0; transform: translateY(36px); } to { opacity: 1; transform: none; } }
+@keyframes entra { from { opacity: 0; transform: scale(.9) translateY(30px); filter: blur(14px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes desde-izq { from { opacity: 0; transform: translateX(-120px); } to { opacity: 1; transform: none; } }
+@keyframes desde-der { from { opacity: 0; transform: translateX(120px); } to { opacity: 1; transform: none; } }
+@keyframes desde-abajo { from { opacity: 0; transform: translate(140px, 180px); } to { opacity: 1; transform: none; } }
+@keyframes desde-arriba { from { opacity: 0; transform: translate(60px, -160px) rotate(6deg); } to { opacity: 1; transform: none; } }
+
+/* (las fotos flotan y siguen un poco al ratón; «translate» va aparte de «transform», así no pisa la entrada) */
+.flota { translate: calc(var(--px) * var(--prof, 10px)) calc(var(--py) * var(--prof, 10px) + var(--sube, 0px)); }
+.foto, .foto-marcas img { max-width: none !important; max-height: none !important; }
+@property --sube { syntax: "<length>"; inherits: true; initial-value: 0px; }
+section.present img.flota, section.present .foto-marcas.flota { animation-name: entra, mecer; animation-duration: 1.3s, 7s; animation-timing-function: var(--suave), ease-in-out; animation-iteration-count: 1, infinite; animation-direction: normal, alternate; animation-fill-mode: both, none; animation-delay: calc(var(--i, 0) * 120ms + 200ms), 1.6s; }
+@keyframes mecer { from { --sube: -9px; } to { --sube: 9px; } }
+section.present .tarjeta img.flota { animation-name: mecer; animation-duration: 7s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; animation-delay: 0s; animation-fill-mode: none; }
+section.present img.desde-arriba.flota { animation-name: desde-arriba, mecer; animation-duration: 1.4s, 6s; }
+
+/* ------------------------------------------------------------------ 3 · prototipos: marcas sobre la foto */
+.puntos { list-style: none; margin: 16px 0 0 !important; padding: 0; display: flex; flex-direction: column; gap: 30px; }
+.puntos li { font-size: 40px; font-weight: 650; padding-left: 44px; position: relative; }
+.puntos li::before { content: ""; position: absolute; left: 0; top: .42em; width: 18px; height: 18px; border-radius: 50%; background: var(--morado); }
+.foto-marcas img { display: block; width: 100%; }
+.marca { position: absolute; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: var(--morado); box-shadow: 0 0 0 6px rgba(100, 34, 184, .22); opacity: 0; }
+.marca::before { content: ""; position: absolute; top: 9px; height: 3px; width: 86px; background: var(--morado); transform: scaleX(0); }
+.marca.izq::before { right: 22px; transform-origin: right; }
+.marca.der::before { left: 22px; transform-origin: left; }
+.marca b { position: absolute; top: -17px; white-space: nowrap; font-size: 30px; font-weight: 700; color: var(--tinta); background: #fff; padding: 8px 18px; border-radius: 999px; box-shadow: 0 8px 24px rgba(6, 63, 59, .16); opacity: 0; }
+.marca.izq b { right: 108px; }
+.marca.der b { left: 108px; }
+section.present .marca { animation: punto .5s var(--suave) both, late 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * 160ms + 500ms), calc(var(--i) * 160ms + 1.2s); }
+section.present .marca::before { animation: traza .5s var(--suave) both; animation-delay: calc(var(--i) * 160ms + 800ms); }
+section.present .marca b { animation: sube .5s var(--suave) both; animation-delay: calc(var(--i) * 160ms + 1100ms); }
+@keyframes punto { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: none; } }
+@keyframes late { 50% { box-shadow: 0 0 0 14px rgba(100, 34, 184, 0); } }
+
+/* ------------------------------------------------------------------ 4 · dos líneas */
+.tarjeta { width: 830px; height: 440px; border-radius: 36px; background: #fff; box-shadow: 0 30px 70px rgba(6, 63, 59, .12); padding: 54px 56px; box-sizing: border-box; overflow: hidden; }
+.tarjeta > * { position: relative; margin: 0; }
+.tarjeta h3 { font-size: 76px; margin: 18px 0 22px; z-index: 1; }
+.tarjeta p:not(.ceja) { font-size: 38px; font-weight: 500; line-height: 1.3; max-width: 470px; }
+.tarjeta img { position: absolute; right: -50px; bottom: -70px; height: 300px; z-index: 0; }
+.tarjeta.oscura { background: var(--tinta); }
+.tarjeta.oscura h3, .tarjeta.oscura p:not(.ceja) { color: #fff; }
+.tarjeta.oscura .ceja { color: var(--lila) !important; }
+.franja { display: flex; align-items: center; gap: 22px; }
+.franja > * { position: static; }
+.chip { font-size: 30px; font-weight: 650; color: var(--morado); border: 3px solid var(--morado); border-radius: 999px; padding: 10px 26px; }
+
+/* ------------------------------------------------------------------ 5 · material */
+.pastilla { font-size: 32px; font-weight: 700; color: #fff !important; background: var(--morado); border-radius: 999px; padding: 14px 32px; }
+.granja { display: flex; align-items: center; gap: 40px; }
+.granja > * { position: static; margin: 0; }
+.rejilla { display: grid; grid-template-columns: repeat(10, 34px); gap: 10px; }
+.rejilla i { width: 34px; height: 34px; border-radius: 8px; background: rgba(6, 63, 59, .10); position: relative; overflow: hidden; }
+.rejilla i::after { content: ""; position: absolute; inset: 0; background: var(--morado); transform: translateY(101%); }
+section.present .rejilla i::after { animation: llena .5s var(--suave) both; animation-delay: calc(var(--k) * 38ms + 1.1s); }
+@keyframes llena { to { transform: none; } }
+
+/* ------------------------------------------------------------------ 6 · el proceso entero */
+.tuberia { left: 60px; top: 318px; width: 1800px; display: grid; grid-template-columns: 236px 450px repeat(4, 1fr); gap: 20px; align-items: start; }
+.tuberia > * { position: relative; margin: 0; }
+.tuberia .hilo { position: absolute; left: 0; right: 0; top: 34px; height: 4px; background: var(--morado); border-radius: 2px; transform: scaleX(0); transform-origin: left; }
+section.present .tuberia .hilo { animation: traza 2s var(--suave) both; animation-delay: .5s; }
+.paso { padding: 96px 8px 0 4px; opacity: 0; }
+section.present .paso { animation: sube .8s var(--suave) both; animation-delay: calc(var(--i) * 190ms + 100ms); }
+.paso .nodo { position: absolute; left: 0; top: 0; width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 4px solid var(--morado); box-sizing: border-box; display: grid; place-items: center; font-size: 26px; font-weight: 700; color: var(--morado); }
+.paso h4 { font-size: 41px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 18px; }
+.paso ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.paso li { font-size: 28px; font-weight: 550; line-height: 1.25; opacity: .86; }
+.paso.clave { background: var(--tinta); border-radius: 30px; padding: 110px 34px 40px; margin-top: -14px; box-shadow: 0 30px 70px rgba(6, 63, 59, .25); }
+.paso.clave .nodo { left: 30px; top: 14px; background: var(--morado); color: #fff; border-color: #fff; width: 76px; height: 76px; }
+.paso.clave h4 { font-size: 54px; color: #fff; }
+.paso.clave li { color: #fff; font-size: 32px; opacity: 1; }
+.paso.clave .ceja { color: var(--lila) !important; font-size: 22px; margin: 0 0 10px; }
+.privacidad { display: flex; align-items: center; gap: 18px; font-size: 32px; font-weight: 500; }
+.privacidad svg { width: 44px; height: 44px; color: var(--morado); flex: none; }
+.privacidad > * { position: static; }
+
+/* ------------------------------------------------------------------ 7 · simulación */
+.etapas { list-style: none; margin: 34px 0 0 !important; padding: 0; width: 100%; display: flex; flex-direction: column; }
+.etapas li { display: grid; grid-template-columns: 74px 1fr; align-items: start; padding: 13px 0; border-top: 2px solid rgba(6, 63, 59, .14); opacity: .45; transition: opacity .5s, padding .5s; cursor: pointer; }
+.etapas li b { font-size: 26px; font-weight: 700; color: var(--morado); padding-top: 9px; }
+.etapas li h4 { font-size: 40px; font-weight: 700; margin: 0; transition: font-size .5s var(--suave), color .5s; }
+.etapas li p { font-size: 26px; font-weight: 500; line-height: 1.4; margin: 0; max-height: 0; overflow: hidden; opacity: 0; transition: max-height .6s var(--suave), opacity .5s, margin .5s; }
+.etapas li.hecha { opacity: .8; }
+.etapas li.activa { opacity: 1; padding: 20px 0; }
+.etapas li.activa h4 { font-size: 54px; color: var(--morado); }
+.etapas li.activa p { max-height: 160px; opacity: 1; margin-top: 8px; }
+.etapas li.clave.activa h4 { font-size: 66px; }
+.reproducir { left: 1166px; top: 430px; width: 220px; height: 220px; border-radius: 50%; border: 0; background: var(--morado); color: #fff; cursor: pointer; display: grid; place-items: center; box-shadow: 0 30px 80px rgba(100, 34, 184, .45); transition: transform .5s var(--suave), opacity .5s; animation: respira 2.4s ease-in-out infinite; pointer-events: auto; }
+.reproducir svg { width: 110px; height: 110px; margin-left: 12px; }
+@keyframes respira { 50% { box-shadow: 0 30px 80px rgba(100, 34, 184, .45), 0 0 0 26px rgba(100, 34, 184, .12); } }
+body.sim-en-marcha .reproducir { opacity: 0; transform: scale(.5); pointer-events: none; }
+.cuenta { right: 86px; top: 92px; font-size: 30px; font-weight: 600; background: #fff; border-radius: 999px; padding: 14px 30px; box-shadow: 0 12px 34px rgba(6, 63, 59, .14); opacity: 0; transition: opacity .6s; font-variant-numeric: tabular-nums; }
+.cuenta b { color: var(--morado); font-size: 38px; }
+body.sim-contando .cuenta { opacity: 1; }
+
+/* ------------------------------------------------------------------ 8 · realidad mixta */
+.pulso { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(140, 80, 255, .55), rgba(140, 80, 255, 0) 65%); mix-blend-mode: screen; opacity: 0; }
+section.present .pulso { animation: pulso 3s ease-in-out 1.8s infinite; }
+@keyframes pulso { 0%, 100% { opacity: .15; transform: scale(.85); } 50% { opacity: .9; transform: scale(1.15); } }
+
+/* ------------------------------------------------------------------ 9 · diferentes */
+.union { display: flex; align-items: center; gap: 26px; }
+.union > * { position: static; }
+.pieza { font-size: 46px; font-weight: 700; padding: 22px 44px; border-radius: 999px; opacity: 0; }
+.pieza.a { background: var(--tinta); color: #fff; }
+.pieza.b { background: var(--morado); color: #fff; }
+.mas { font-size: 64px; font-weight: 700; color: var(--morado); opacity: 0; }
+section.present .pieza.a { animation: junta-a 1.2s var(--suave) .9s both; }
+section.present .pieza.b { animation: junta-b 1.2s var(--suave) .9s both; }
+section.present .mas { animation: punto .6s var(--suave) 1.7s both; }
+@keyframes junta-a { from { opacity: 0; transform: translateX(-260px); } to { opacity: 1; transform: none; } }
+@keyframes junta-b { from { opacity: 0; transform: translateX(260px); } to { opacity: 1; transform: none; } }
+.sello { display: inline-flex; align-items: center; gap: 16px; font-size: 40px; font-weight: 700; color: var(--morado) !important; border: 4px solid var(--morado); border-radius: 18px; padding: 16px 30px; opacity: 0; }
+.sello svg { width: 44px; height: 44px; }
+section.present .sello { animation: sello .7s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(var(--i) * 120ms + 900ms); }
+@keyframes sello { from { opacity: 0; transform: scale(1.9) rotate(-9deg); } to { opacity: 1; transform: rotate(-2deg); } }
+
+/* ------------------------------------------------------------------ 10 · seis meses */
+.gigante { white-space: nowrap; font-size: 200px; font-weight: 700; line-height: 1; letter-spacing: -.045em; color: var(--morado) !important; font-variant-numeric: tabular-nums; }
+.hitos { list-style: none; margin: 0; padding: 0; width: 830px; display: flex; flex-direction: column; }
+.hitos li { font-size: 42px; font-weight: 650; line-height: 1.2; padding: 30px 0 30px 86px; border-bottom: 2px solid rgba(6, 63, 59, .14); position: relative; opacity: 0; }
+.hitos li::before { content: ""; position: absolute; left: 0; top: 50%; width: 54px; height: 54px; margin-top: -27px; border-radius: 50%; background: var(--morado) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4L18 8' fill='none' stroke='white' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 34px no-repeat; transform: scale(0); }
+section.present .hitos li { animation: desde-der .8s var(--suave) both; animation-delay: calc(var(--i) * 230ms + 300ms); }
+section.present .hitos li::before { animation: punto .5s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(var(--i) * 230ms + 700ms); }
+
+/* ------------------------------------------------------------------ 11 · cierre en dos actos */
+.acto { transition: opacity .8s ease, transform 1s var(--suave); }
+.acto.dos { opacity: 0; pointer-events: none; }
+.acto.dos .titulo, .acto.dos .firma { color: #fff; }
+.acto.dos .firma { color: var(--lila) !important; opacity: 0; }
+section.acto2 .acto.uno { opacity: 0; transform: translateY(-60px); }
+section.acto2 .acto.dos { opacity: 1; }
+section.present .acto.dos .titulo .l > span { animation: none; }
+section.acto2 .acto.dos .titulo .l > span { animation: sale 1.1s var(--suave) both; animation-delay: calc(var(--n) * 170ms + 500ms); }
+section.acto2 .acto.dos .firma { animation: sube 1s var(--suave) 1.6s both; }
+section.present .acto.dos .raya { animation: none; }
+section.acto2 .acto.dos .raya { background: var(--lila); animation: traza 1s var(--suave) 1.3s both; }
+
+/* ------------------------------------------------------------------ pie */
+.pie { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 2vw; padding: 1.5vh 7.5vw 2.2vh 4.4vw; font-size: max(11px, 1.05vw); font-weight: 650; color: var(--tinta); opacity: .75; pointer-events: none; transition: color .8s; }
+.pie-barra { flex: 1; height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--tinta) 14%, transparent); overflow: hidden; }
+.pie-barra i { display: block; height: 100%; width: 0; background: var(--morado); transition: width .9s var(--suave); }
+#pie-num { font-variant-numeric: tabular-nums; }
+body.portada .pie-marca { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mancha, .trama { animation: none; }
+}
