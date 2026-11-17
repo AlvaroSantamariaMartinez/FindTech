@@ -21,7 +21,7 @@ from PIL import Image
 
 AQUI = Path(__file__).resolve().parent.parent
 # imagen del PowerPoint -> (nombre, lado mayor en píxeles)
-FOTOS = {5: ("corazon", 1000), 7: ("nariz", 1000), 8: ("impresora", 760), 12: ("gafas", 700),
+FOTOS = {5: ("corazon", 1000), 7: ("nariz", 1000), 8: ("impresora", 1000), 12: ("gafas", 700),
          13: ("manos", 1400), 16: ("corazon2", 1000), 20: ("pelvis", 900)}
 # caras de cada malla del cerebro (las que no están aquí, 2500 como mucho)
 CARAS = {"cerebro": 60000, "corteza": 30000, "sustancia_blanca": 14000, "cerebelo": 8000, "tronco_encefalico": 6000,

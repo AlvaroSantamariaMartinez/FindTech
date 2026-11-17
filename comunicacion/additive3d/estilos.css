@@ -69,6 +69,7 @@ body.tono-oscuro .trama { background-image: radial-gradient(circle, rgba(205, 18
 .titulo .l > span { display: inline-block; transform: translateY(112%); }
 section.present .titulo .l > span { animation: sale 1s var(--suave) both; animation-delay: calc(var(--n) * 130ms + 150ms); }
 .morado, .reveal .titulo .morado { color: var(--morado); }
+.reveal strong { font-weight: 700; }
 
 .reveal p, .reveal li, .reveal h3, .reveal h4 { color: var(--tinta); font-family: inherit; text-transform: none; letter-spacing: -.012em; }
 .frase { font-size: 56px; font-weight: 650; line-height: 1.18; letter-spacing: -.02em; }
@@ -144,6 +145,15 @@ section.present .marca b { animation: sube .5s var(--suave) both; animation-dela
 .chip { font-size: 30px; font-weight: 650; color: var(--morado); border: 3px solid var(--morado); border-radius: 999px; padding: 10px 26px; }
 
 /* ------------------------------------------------------------------ 5 · material */
+.reveal h3.titular { font-size: 112px; line-height: 1.03; letter-spacing: -.035em; color: var(--morado); }
+.halo { width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 34, 184, .24), rgba(100, 34, 184, 0) 62%); }
+section.present .halo { animation: halo 5s ease-in-out infinite; }
+@keyframes halo { 0%, 100% { transform: scale(.92); opacity: .7; } 50% { transform: scale(1.06); opacity: 1; } }
+.granja.compacta { gap: 30px; }
+.granja.compacta .cifra { font-size: 96px; }
+.granja.compacta .rejilla { grid-template-columns: repeat(10, 22px); gap: 7px; }
+.granja.compacta .rejilla i { width: 22px; height: 22px; border-radius: 5px; }
+.granja.compacta .texto { font-size: 30px; line-height: 1.3; }
 .pastilla { font-size: 32px; font-weight: 700; color: #fff !important; background: var(--morado); border-radius: 999px; padding: 14px 32px; }
 .granja { display: flex; align-items: center; gap: 40px; }
 .granja > * { position: static; margin: 0; }

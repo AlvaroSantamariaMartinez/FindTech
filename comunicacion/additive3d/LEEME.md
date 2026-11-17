@@ -26,6 +26,8 @@ que se abre con doble clic en Chrome o Edge, sin servidor y sin internet.
 | Cambio de diapositiva, contadores y dibujo de la red neuronal | `app.js` |
 | Fotos y cerebro | `herramientas/preparar.py` y `herramientas/cerebro_secciones.py` |
 
+En «Material de desarrollo» (la 5) la protagonista es la impresora de hidrogel; la granja de impresoras va debajo, en pequeño.
+
 Para verla mientras se cambia: `python -m http.server` en `comunicacion/` y abrir
 `http://localhost:8000/additive3d/presentacion.html`. Después, `construir.py capturas` saca una imagen de cada diapositiva
 en `salida/capturas-additive3d` para revisarlas.
