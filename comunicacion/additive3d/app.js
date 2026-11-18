@@ -1,5 +1,5 @@
 // Lo que mueve la presentación: reveal, los tonos del fondo, los títulos, los contadores, el pie y la simulación.
-import { irA, ponEtapa, escucharCuenta } from './escena.js';
+import { irA, ponEtapa, escucharCuenta, escucharFase } from './escena.js';
 
 const exportar = location.search.includes('export');
 const secciones = [...document.querySelectorAll('.reveal .slides > section')];
@@ -55,6 +55,9 @@ escucharCuenta((n, total) => {
   c.querySelector('span').textContent = total;
 });
 etapas.forEach((li, i) => li.addEventListener('click', () => Reveal.navigateFragment(i)));
+// La realidad mixta: la escena dice en qué fase va (0 escaneo, 1 gemelo, 2 venas) y aquí se marca en la lista.
+const fasesMx = [...document.querySelectorAll('#mx-fases li')];
+escucharFase(n => fasesMx.forEach((li, i) => { li.classList.toggle('activa', i === n); li.classList.toggle('hecha', i < n); }));
 document.getElementById('reproducir').addEventListener('click', () => Reveal.next());
 document.addEventListener('keydown', ev => {
   if (Reveal.getCurrentSlide().id !== 'simulacion' || ev.ctrlKey || ev.altKey || ev.metaKey) return;

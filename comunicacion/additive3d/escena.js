@@ -3,6 +3,7 @@
 //   - Portada: el cerebro, girando.
 //   - Simulación: los cortes de la resonancia se comprimen y de ese bloque sale el cerebro, sección a sección; después
 //     pasa a malla, se cierra el molde, se cuela la silicona y aparece el gemelo digital con lo que lleva dentro.
+//   - Realidad mixta: unas gafas escanean el cerebro, el gemelo digital encaja encima y se encienden sus venas.
 //   - Cierre: el cerebro como holograma.
 import * as THREE from '../presentacion/vendor/three.module.min.js';
 
@@ -328,8 +329,229 @@ function fotograma() {
   sombra.scale.setScalar(modo === 'cerebro' ? 0.62 : 0.8);
   sombra.visible = a.sombra > 0.01;
 
+  mixtaFotograma(dt, ancho);
   renderer.render(escena, camara);
   requestAnimationFrame(fotograma);
+}
+
+
+// ---------------------------------------------------------------- realidad mixta (diapositiva «mixta»)
+// Unas gafas escanean un cerebro real; su gemelo digital (la malla del mismo cerebro) llega, encaja encima y se
+// dibujan, brillando, las venas que MRAnalyzer traza por sus surcos. Fases: 0 escaneo, 1 gemelo, 2 venas.
+const mx = { grupo: new THREE.Group(), real: null, puntos: null, gemelo: null, red: null, venas: null, op: 0, fase: -1,
+  gafas: new THREE.Group(), haz: null, anillo: null, onda: null, mats: [] };
+escena.add(mx.grupo, mx.gafas);
+let alFase = () => {};
+export function escucharFase(f) { alFase = f; }
+const MX = { escaneo: [1.3, 4.9], llega: [4.9, 7.1], venas: [7.4, 11.6] };
+
+function rectRedondo(forma, x, y, w, h, r) {
+  forma.moveTo(x + r, y); forma.lineTo(x + w - r, y); forma.quadraticCurveTo(x + w, y, x + w, y + r);
+  forma.lineTo(x + w, y + h - r); forma.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  forma.lineTo(x + r, y + h); forma.quadraticCurveTo(x, y + h, x, y + h - r);
+  forma.lineTo(x, y + r); forma.quadraticCurveTo(x, y, x + r, y);
+  return forma;
+}
+// Las gafas, mirando hacia +z: carcasa clara, frente negro brillante con sus cámaras, almohadilla y cintas.
+function hacerGafas() {
+  const m = o => { const x = new THREE.MeshPhysicalMaterial({ transparent: true, opacity: 0, ...o }); mx.mats.push(x); return x; };
+  const carcasa = m({ color: 0xeef0f2, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.25 });
+  const negro = m({ color: 0x07080b, roughness: 0.12, metalness: 0.25, clearcoat: 1, clearcoatRoughness: 0.04 });
+  const gris = m({ color: 0x4d535b, roughness: 0.85 });
+  const lente = m({ color: 0x1a1d24, roughness: 0.05, metalness: 0.6, clearcoat: 1 });
+  const g = mx.gafas;
+  const cuerpo = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.46, -0.19, 0.92, 0.38, 0.17),
+    { depth: 0.22, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 5, curveSegments: 20 });
+  cuerpo.translate(0, 0, -0.11);
+  g.add(new THREE.Mesh(cuerpo, carcasa));
+  const frente = new THREE.Mesh(new THREE.ShapeGeometry(rectRedondo(new THREE.Shape(), -0.43, -0.165, 0.86, 0.33, 0.15), 20), negro);
+  frente.position.z = 0.162;
+  g.add(frente);
+  for (const [x, y] of [[-0.25, 0.02], [0, 0.04], [0.25, 0.02], [-0.33, -0.09], [0.33, -0.09]]) {
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.02, 20), lente);
+    c.rotation.x = Math.PI / 2;
+    c.position.set(x, y, 0.168);
+    g.add(c);
+  }
+  const led = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.012), new THREE.MeshBasicMaterial({ color: 0xb48cff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  led.position.set(0, -0.12, 0.166);
+  g.add(led);
+  mx.led = led;
+  const cara = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.4, -0.15, 0.8, 0.3, 0.13), { depth: 0.12, bevelEnabled: false, curveSegments: 16 });
+  cara.translate(0, 0, -0.27);
+  g.add(new THREE.Mesh(cara, gris));
+  const trasera = new THREE.TorusGeometry(0.5, 0.035, 10, 60, Math.PI * 1.25);
+  trasera.rotateZ(-0.125 * Math.PI);
+  trasera.rotateX(-Math.PI / 2);
+  trasera.scale(1, 1, 1.35);
+  trasera.translate(0, 0, -0.17);
+  g.add(new THREE.Mesh(trasera, gris));
+  const arriba = new THREE.TorusGeometry(0.55, 0.026, 8, 36, Math.PI / 2);
+  arriba.rotateY(Math.PI / 2);
+  arriba.scale(1, 0.55, 1);
+  arriba.translate(0, -0.05, -0.12);
+  g.add(new THREE.Mesh(arriba, gris));
+  g.scale.setScalar(0.85);
+}
+
+function prepararMixta(geoCerebro, geoAlambre, vasos) {
+  const real = new THREE.Mesh(geoCerebro, new THREE.MeshStandardMaterial({ color: 0xd9a097, roughness: 0.55,
+    emissive: 0x7a3fe0, emissiveIntensity: 0 }));
+  mx.real = real;
+  mx.grupo.add(real);
+  // los puntos del escaneo: los vértices del cerebro, encendidos donde pasa el barrido
+  mx.puntos = new THREE.Points(geoCerebro, new THREE.ShaderMaterial({
+    uniforms: { uFrente: { value: 2 }, uOp: { value: 0 }, uTiempo: tiempo },
+    vertexShader: `uniform float uFrente; varying float vB; varying float vY;
+      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv;
+        vY = position.y; vB = exp(-pow((position.y - uFrente) / 0.06, 2.0)); gl_PointSize = (1.8 + 4.0 * vB) * (3.0 / -mv.z); }`,
+    fragmentShader: `uniform float uFrente; uniform float uOp; varying float vB; varying float vY;
+      void main(){ vec2 c = gl_PointCoord - 0.5; if (length(c) > 0.5) discard;
+        float hecho = step(uFrente, vY) * 0.32;
+        gl_FragColor = vec4(mix(vec3(0.62, 0.42, 1.0), vec3(1.0), vB), (hecho + vB) * uOp); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  mx.grupo.add(mx.puntos);
+  // el anillo que acompaña al barrido
+  mx.anillo = new THREE.Mesh(new THREE.RingGeometry(1.08, 1.1, 128), new THREE.MeshBasicMaterial({ color: 0xc9a8ff, transparent: true, opacity: 0,
+    side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+  mx.anillo.rotation.x = -Math.PI / 2;
+  escena.add(mx.anillo);
+  // el gemelo digital: holograma y malla
+  mx.gemelo = new THREE.Mesh(geoCerebro, holograma(0x9a6cff, true));
+  mx.red = new THREE.LineSegments(geoAlambre, new THREE.LineBasicMaterial({ color: 0xb48cff, transparent: true, opacity: 0,
+    blending: THREE.AdditiveBlending, depthWrite: false }));
+  mx.gemeloG = new THREE.Group();
+  mx.gemeloG.add(mx.gemelo, mx.red);
+  escena.add(mx.gemeloG);
+  // la onda del encaje
+  mx.onda = new THREE.Mesh(new THREE.RingGeometry(0.98, 1.0, 128), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0,
+    side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+  escena.add(mx.onda);
+  // el haz de las gafas
+  mx.haz = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 64, 1, true), new THREE.ShaderMaterial({
+    uniforms: { uOp: { value: 0 }, uTiempo: tiempo },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+    fragmentShader: `uniform float uOp; uniform float uTiempo; varying vec2 vUv;
+      void main(){ float lineas = 0.55 + 0.45 * step(0.5, fract(vUv.x * 40.0));
+        float ondas = 0.6 + 0.4 * sin(vUv.y * 40.0 + uTiempo * 9.0);
+        float a = (0.05 + 0.2 * (1.0 - vUv.y)) * lineas * ondas;
+        gl_FragColor = vec4(0.7, 0.5, 1.0, a * uOp); }`,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
+  escena.add(mx.haz);
+  // las venas: tubos con la distancia a la raíz de cada vértice (0–1); se dibujan creciendo hasta uFrente
+  const q = new Uint16Array(vasos.bin, vasos.datos.pos[0], vasos.datos.pos[1] * 3);
+  const pos = new Float32Array(q.length);
+  for (let i = 0; i < q.length; i++) pos[i] = vasos.datos.min[i % 3] + q[i] / 65535 * vasos.datos.tam[i % 3];
+  const ql = new Uint16Array(vasos.bin, vasos.datos.largo[0], vasos.datos.largo[1]);
+  const largo = new Float32Array(ql.length);
+  for (let i = 0; i < ql.length; i++) largo[i] = ql[i] / 65535;
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('aLargo', new THREE.BufferAttribute(largo, 1));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(vasos.bin, vasos.datos.idx[0], vasos.datos.idx[1]), 1));
+  g.computeVertexNormals();
+  mx.venas = new THREE.Mesh(g, new THREE.ShaderMaterial({
+    uniforms: { uFrente: { value: 0 }, uOp: { value: 0 }, uTiempo: tiempo },
+    vertexShader: `attribute float aLargo; varying float vL; varying vec3 vN; varying vec3 vV;
+      void main(){ vL = aLargo; vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal);
+        vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform float uFrente; uniform float uOp; uniform float uTiempo; varying float vL; varying vec3 vN; varying vec3 vV;
+      void main(){ if (vL > uFrente) discard;
+        float punta = smoothstep(uFrente - 0.07, uFrente, vL);
+        float pulso = 0.5 + 0.5 * sin(vL * 70.0 - uTiempo * 5.0);
+        float f = abs(dot(normalize(vN), normalize(vV)));
+        vec3 c = mix(vec3(0.66, 0.42, 1.0), vec3(1.0, 0.95, 1.0), max(punta, 0.25 * pulso));
+        gl_FragColor = vec4(c * (0.55 + 0.75 * f) * (1.0 + 1.5 * punta), (0.75 + 0.25 * f) * uOp); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  mx.venas.renderOrder = 5;
+  mx.grupo.add(mx.venas);
+  // el halo: los mismos tubos, inflados hacia fuera y muy tenues
+  mx.halo = new THREE.Mesh(g, new THREE.ShaderMaterial({
+    uniforms: { uFrente: mx.venas.material.uniforms.uFrente, uOp: { value: 0 } },
+    vertexShader: `attribute float aLargo; varying float vL; varying vec3 vN; varying vec3 vV;
+      void main(){ vL = aLargo; vec4 w = modelMatrix * vec4(position + normal * 0.012, 1.0); vN = normalize(mat3(modelMatrix) * normal);
+        vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
+    fragmentShader: `uniform float uFrente; uniform float uOp; varying float vL; varying vec3 vN; varying vec3 vV;
+      void main(){ if (vL > uFrente) discard; float f = abs(dot(normalize(vN), normalize(vV)));
+        gl_FragColor = vec4(vec3(0.55, 0.3, 1.0) * pow(f, 2.0), uOp); }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  mx.halo.renderOrder = 4;
+  mx.grupo.add(mx.halo);
+  hacerGafas();
+}
+
+const centroMx = new THREE.Vector3(), gafasMx = new THREE.Vector3(), tmpMx = new THREE.Vector3(), arribaMx = new THREE.Vector3(0, 1, 0);
+const giroMx = new THREE.Quaternion();
+function mixtaFotograma(dt, ancho) {
+  if (!mx.real) return;
+  const activa = modo === 'mixta', tm = activa ? tModo : 0;
+  mx.op = s(mx.op, activa ? 1 : 0, activa ? 3 : 5, dt);
+  const op = mx.op, ver = op > 0.01;
+  for (const o of [mx.grupo, mx.gafas, mx.haz, mx.anillo, mx.gemeloG, mx.onda]) o.visible = ver;
+  if (!ver) { mx.fase = -1; return; }
+  const fase = tm < MX.escaneo[0] ? -1 : tm < MX.llega[0] ? 0 : tm < MX.venas[0] ? 1 : 2;
+  if (activa && fase !== mx.fase) { mx.fase = fase; alFase(fase); }
+  const e = MX.escaneo, l = MX.llega, v = MX.venas;
+  centroMx.set(0.3 * ancho, -0.12, 0);
+  mx.grupo.position.copy(centroMx);
+  // (gira despacio y llega de lado a las venas: de lado se ven las de Silvio y las que suben a la línea media)
+  mx.grupo.rotation.y = -0.75 + 0.07 * tModo;
+  // el cerebro real (más oscuro cuando se encienden las venas, para que resalten)
+  const venasK = suave((tm - v[0]) / 1.2);
+  // (opaco siempre: entra creciendo, que fundido se ve el interior de la malla)
+  mx.grupo.scale.setScalar(0.7 + 0.3 * suave(tm / 1.0));
+  mx.real.material.color.setHex(0xd9a097).multiplyScalar(1 - 0.5 * venasK);
+  // el escaneo: el barrido baja por el cerebro
+  const k = (tm - e[0]) / (e[1] - e[0]);
+  const frente = 0.8 - 1.65 * suave(k);
+  mx.puntos.material.uniforms.uFrente.value = tm < e[0] ? 2 : frente;
+  mx.puntos.material.uniforms.uOp.value = op * (tm < e[0] ? 0 : tm < e[1] + 0.3 ? 1 : Math.max(0.25, 1 - (tm - e[1] - 0.3) / 1.2));
+  const barre = op * (tm > e[0] && tm < e[1] + 0.2 ? Math.min(1, (tm - e[0]) * 3) * Math.min(1, (e[1] + 0.2 - tm) * 4) : 0);
+  mx.anillo.material.opacity = 0.9 * barre;
+  mx.anillo.position.set(centroMx.x, centroMx.y + frente, 0);
+  // las gafas: entran por la izquierda y miran al cerebro
+  const entra = suave(tm / 1.3);
+  gafasMx.set(centroMx.x + 1.05, 0.95, -1.1).add(tmpMx.set(0.9 * (1 - entra), 0.35 * (1 - entra), 0));
+  mx.gafas.position.copy(gafasMx);
+  mx.gafas.lookAt(centroMx.x, centroMx.y + 0.1, 0);
+  mx.gafas.position.y += Math.sin(tModo * 1.3) * 0.015;
+  for (const m of mx.mats) m.opacity = op * entra;
+  mx.led.material.opacity = op * entra * (0.35 + 0.65 * (tm > e[0] && tm < l[1] ? 0.5 + 0.5 * Math.sin(tModo * 10) : 0.2));
+  // el haz, de las gafas al cerebro, mientras escanea
+  const delante = tmpMx.set(0, 0, 0.2).applyQuaternion(mx.gafas.quaternion);
+  const desde = gafasMx.clone().add(delante), hasta = centroMx.clone();
+  const largoHaz = desde.distanceTo(hasta);
+  mx.haz.position.copy(desde).lerp(hasta, 0.5);
+  giroMx.setFromUnitVectors(arribaMx, desde.clone().sub(hasta).normalize());
+  mx.haz.quaternion.copy(giroMx);
+  mx.haz.scale.set(0.95, largoHaz, 0.95);
+  mx.haz.material.uniforms.uOp.value = op * (tm > e[0] - 0.3 && tm < e[1] + 0.5 ? Math.min(1, (tm - e[0] + 0.3) * 2) * Math.min(1, (e[1] + 0.5 - tm) * 2) : 0);
+  // el gemelo: aparece junto a las gafas y baja a encajar sobre el cerebro
+  const kl = suave((tm - l[0]) / (l[1] - l[0]));
+  const aparece = Math.min(1, Math.max(0, (tm - l[0]) / 0.5));
+  // (llega por delante, desde arriba a la izquierda, para que se vea encajar)
+  mx.gemeloG.position.copy(centroMx).add(tmpMx.set(-0.75, 0.8, 1.05).multiplyScalar(1 - kl));
+  mx.gemeloG.rotation.y = mx.grupo.rotation.y + 0.9 * (1 - kl);
+  mx.gemeloG.rotation.z = 0.25 * (1 - kl);
+  mx.gemeloG.scale.setScalar(1.0 + 0.012 + 0.25 * (1 - kl));
+  const encajado = tm > l[1];
+  mx.gemelo.material.uniforms.uOp.value = op * aparece * (encajado ? 0.42 - 0.12 * venasK : 0.9);
+  mx.red.material.opacity = op * aparece * (encajado ? 0.1 * (1 - venasK) + 0.03 : 0.35);
+  // el encaje: una onda que se abre y un destello en el cerebro
+  const tOnda = tm - l[1];
+  const onda = tOnda > 0 && tOnda < 1.1 ? tOnda / 1.1 : -1;
+  mx.onda.visible = ver && onda >= 0;
+  if (onda >= 0) {
+    mx.onda.position.copy(centroMx);
+    mx.onda.quaternion.copy(camara.quaternion);
+    mx.onda.scale.setScalar(1.0 + 1.1 * onda);
+    mx.onda.material.opacity = op * (1 - onda) * 0.9;
+  }
+  mx.real.material.emissiveIntensity = onda >= 0 ? 0.7 * (1 - onda) : 0;
+  // las venas, creciendo desde la raíz
+  mx.venas.material.uniforms.uFrente.value = tm < v[0] ? 0 : 1.08 * suave((tm - v[0]) / (v[1] - v[0]));
+  mx.venas.material.uniforms.uOp.value = op;
+  mx.halo.material.uniforms.uOp.value = 0.8 * op;
 }
 
 // ---------------------------------------------------------------- arranque
@@ -376,5 +598,7 @@ export const lista = (async () => {
   final.visible = false;
   pivote.add(pieza, alambre, gemelo, final);
   hacerMolde(entero.tam[0] * ESCALA + 0.24, entero.tam[1] * ESCALA + 0.24, entero.tam[2] * ESCALA + 0.24);
+  const vasos = { datos: JSON.parse(new TextDecoder().decode(await bytes('modelos/vasos.json'))), bin: await bytes('modelos/vasos.bin') };
+  prepararMixta(entero.geo, alambre.geometry, vasos);
   window.__escenaLista = true;
 })();

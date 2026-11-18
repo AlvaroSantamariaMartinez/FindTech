@@ -21,8 +21,7 @@ from PIL import Image
 
 AQUI = Path(__file__).resolve().parent.parent
 # imagen del PowerPoint -> (nombre, lado mayor en píxeles)
-FOTOS = {5: ("corazon", 1000), 7: ("nariz", 1000), 8: ("impresora", 1000), 12: ("gafas", 700),
-         13: ("manos", 1400), 16: ("corazon2", 1000), 20: ("pelvis", 900)}
+FOTOS = {5: ("corazon", 1000), 7: ("nariz", 1000), 8: ("impresora", 1000), 16: ("corazon2", 1000), 20: ("pelvis", 900)}
 # caras de cada malla del cerebro (las que no están aquí, 2500 como mucho)
 CARAS = {"cerebro": 60000, "corteza": 30000, "sustancia_blanca": 14000, "cerebelo": 8000, "tronco_encefalico": 6000,
          "ventriculo_lateral": 4000}
@@ -81,7 +80,8 @@ def cerebro(analisis: Path, secciones: Path):
     (AQUI / "modelos").mkdir(exist_ok=True)
     (AQUI / "modelos" / "cerebro.bin").write_bytes(b"".join(trozos))
     (AQUI / "modelos" / "cerebro.json").write_text(json.dumps(
-        {"lado_cortes": round(cortes["lado_mm"] * escala, 4), "alto_cortes": round(cortes["alto_mm"] * escala, 4), "mallas": salida},
+        {"lado_cortes": round(cortes["lado_mm"] * escala, 4), "alto_cortes": round(cortes["alto_mm"] * escala, 4),
+         "centro_mm": [round(float(x), 4) for x in centro], "escala": escala, "mallas": salida},
         separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
     print(len(salida), "mallas", desde // 1024, "KB")
     for f in sorted((secciones / "cortes").glob("corte_*.png")):

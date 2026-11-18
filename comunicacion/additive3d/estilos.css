@@ -236,9 +236,13 @@ section.present .ficha dd b { animation: sube .5s var(--suave) both; animation-d
 .candado svg { width: 40px; height: 40px; }
 
 /* ------------------------------------------------------------------ realidad mixta */
-.pulso { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(140, 80, 255, .55), rgba(140, 80, 255, 0) 65%); mix-blend-mode: screen; opacity: 0; }
-section.present .pulso { animation: pulso 3s ease-in-out 1.8s infinite; }
-@keyframes pulso { 0%, 100% { opacity: .15; transform: scale(.85); } 50% { opacity: .9; transform: scale(1.15); } }
+.fases { left: 90px; top: 760px; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.fases li { display: flex; align-items: center; gap: 18px; font-size: 30px; font-weight: 600; color: var(--tinta); opacity: .32; transition: opacity .5s; }
+.fases li::before { content: ""; width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--morado); transition: background .5s, box-shadow .5s; }
+.fases li.hecha { opacity: .7; }
+.fases li.hecha::before { background: var(--morado); }
+.fases li.activa { opacity: 1; }
+.fases li.activa::before { background: var(--morado); box-shadow: 0 0 0 8px rgba(205, 181, 245, .25); }
 
 /* ------------------------------------------------------------------ 9 · diferentes */
 .union { display: flex; align-items: center; gap: 26px; }

@@ -25,6 +25,7 @@ que se abre con doble clic en Chrome o Edge, sin servidor y sin internet.
 | Cerebro en 3D y simulación | `escena.js` |
 | Cambio de diapositiva, contadores y dibujo de la red neuronal | `app.js` |
 | Fotos y cerebro | `herramientas/preparar.py` y `herramientas/cerebro_secciones.py` |
+| Venas de la realidad mixta | `herramientas/vasos_cerebro.py` |
 
 En «Material de desarrollo» (la 5) la protagonista es la impresora de hidrogel; la granja de impresoras va debajo, en pequeño.
 
@@ -39,6 +40,10 @@ en `salida/capturas-additive3d` para revisarlas.
 - El cerebro es real: lo hizo MRAnalyzer con la resonancia pública «MRHead» de 3D Slicer, y sus 27 secciones las separó la
   red SynthSeg. Los cortes de la simulación y el de la diapositiva de la red neuronal son de esa misma resonancia. No hay
   datos de pacientes.
+- En «Realidad mixta» (la 9) no hay fotos: unas gafas escanean el cerebro, su gemelo digital encaja encima y se
+  encienden las venas. Las gafas están modeladas en la propia escena. Las venas son la red que MRAnalyzer traza por
+  los surcos de ese cerebro (`mranalyzer/vasos.py`), sin las ramitas más finas: es generada, no sale de la
+  resonancia.
 - El molde de la simulación es una caja de ejemplo, no un molde de fabricación.
 - La diapositiva de protección de datos cuenta lo que hace MRAnalyzer al importar un estudio con la anonimización
   activada (`mranalyzer/anonimizar.py`). El programa guarda en el equipo, cifrada, la correspondencia entre el
