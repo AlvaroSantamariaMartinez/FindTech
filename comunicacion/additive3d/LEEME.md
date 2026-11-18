@@ -45,6 +45,8 @@ en `salida/capturas-additive3d` para revisarlas.
   realidad aumentada). Las venas son la red que MRAnalyzer traza por
   los surcos de ese cerebro (`mranalyzer/vasos.py`), sin las ramitas más finas: es generada, no sale de la
   resonancia.
+- En la última, un avión de pasajeros da vueltas alrededor del coxis de la pelvis. Cuando pasa por detrás, el hueso lo
+  tapa. El avión está modelado en la propia escena.
 - El molde de la simulación es una caja de ejemplo, no un molde de fabricación.
 - La diapositiva de protección de datos cuenta lo que hace MRAnalyzer al importar un estudio con la anonimización
   activada (`mranalyzer/anonimizar.py`). El programa guarda en el equipo, cifrada, la correspondencia entre el

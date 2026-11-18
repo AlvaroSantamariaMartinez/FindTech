@@ -4,7 +4,7 @@
 //   - Simulación: los cortes de la resonancia se comprimen y de ese bloque sale el cerebro, sección a sección; después
 //     pasa a malla, se cierra el molde, se cuela la silicona y aparece el gemelo digital con lo que lleva dentro.
 //   - Realidad mixta: unas gafas escanean el cerebro, el gemelo digital encaja encima y se encienden sus venas.
-//   - Cierre: el cerebro como holograma.
+//   - Cierre: un avión de pasajeros da vueltas al coxis de la pelvis y, al final, el cerebro como holograma.
 import * as THREE from '../presentacion/vendor/three.module.min.js';
 
 const EMBEBIDOS = window.__embebidos || {};      // (en la copia de un solo archivo, todo va dentro del HTML)
@@ -330,6 +330,7 @@ function fotograma() {
   sombra.visible = a.sombra > 0.01;
 
   mixtaFotograma(dt, ancho);
+  avionFotograma(dt, t);
   renderer.render(escena, camara);
   requestAnimationFrame(fotograma);
 }
@@ -568,6 +569,182 @@ function mixtaFotograma(dt, ancho) {
   mx.venas.material.uniforms.uFrente.value = tm < v[0] ? 0 : 1.08 * suave((tm - v[0]) / (v[1] - v[0]));
   mx.venas.material.uniforms.uOp.value = op;
   mx.halo.material.uniforms.uOp.value = 0.8 * op;
+}
+
+// ---------------------------------------------------------------- el cierre: un avión de pasajeros en órbita alrededor del coxis
+// Va en sus propios lienzos, centrados en el coxis de la foto de la pelvis. Por detrás del coxis lo tapa el hueso y solo
+// se ve por los huecos de la pelvis.
+// El avión mide 1 de largo, con el morro hacia +z, las alas a lo largo de x y el techo hacia +y.
+function hacerAvion() {
+  const g = new THREE.Group();
+  const blanco = new THREE.MeshStandardMaterial({ color: 0xf6f7f9, roughness: 0.3, metalness: 0.15 });
+  const gris = new THREE.MeshStandardMaterial({ color: 0xc9cfd7, roughness: 0.35, metalness: 0.45 });
+  const morado = new THREE.MeshStandardMaterial({ color: MORADO, roughness: 0.35, metalness: 0.1 });
+  const oscuro = new THREE.MeshStandardMaterial({ color: 0x1b2130, roughness: 0.12, metalness: 0.5 });
+  // fuselaje: un perfil girado; la cola sube un poco, como en los aviones de verdad
+  const perfil = [[0, -0.5], [0.016, -0.495], [0.032, -0.45], [0.047, -0.37], [0.058, -0.27], [0.062, -0.15], [0.062, 0.3],
+    [0.059, 0.37], [0.052, 0.42], [0.04, 0.46], [0.024, 0.49], [0, 0.5]];
+  const subeCola = y => (y < -0.15 ? (-0.15 - y) * 0.13 : 0);
+  function trozo(desde, hasta, phi0, phiL, crece, mat) {
+    const pts = perfil.filter(([, y]) => y >= desde && y <= hasta).map(([r, y]) => new THREE.Vector2(r * crece, y));
+    const geo = new THREE.LatheGeometry(pts, 28, phi0, phiL);
+    const pos = geo.attributes.position;
+    for (let i = 0; i < pos.count; i++) pos.setZ(i, pos.getZ(i) - subeCola(pos.getY(i)));
+    geo.rotateX(Math.PI / 2);         // (el eje del perfil, y, pasa a z; y lo que era −z queda arriba)
+    geo.computeVertexNormals();
+    g.add(new THREE.Mesh(geo, mat));
+  }
+  trozo(-1, 1, 0, Math.PI * 2, 1, blanco);
+  const lado = Math.PI / 2;           // (phi = π/2 es el costado +x, phi = π es el techo)
+  for (const s of [1, -1]) {
+    const c = s > 0 ? lado : 3 * lado;
+    trozo(-0.33, 0.37, c + s * 0.3 - 0.035, 0.07, 1.006, oscuro);    // las ventanillas
+    trozo(-0.4, 0.43, c + s * 0.06 - 0.06, 0.12, 1.006, morado);     // la franja
+  }
+  trozo(0.4, 0.46, Math.PI - 0.55, 1.1, 1.008, oscuro);              // la cabina
+  // alas, estabilizadores y deriva: planchas finas con la planta del ala
+  function plancha(puntos, grueso, mat) {
+    const forma = new THREE.Shape(puntos.map(([a, b]) => new THREE.Vector2(a, b)));
+    const geo = new THREE.ExtrudeGeometry(forma, { depth: grueso, bevelEnabled: false });
+    geo.translate(0, 0, -grueso / 2);
+    return new THREE.Mesh(geo, mat);
+  }
+  const semiala = [[0.04, 0.12], [0.5, -0.13], [0.5, -0.19], [0.04, -0.08]];
+  const semicola = [[0.03, -0.35], [0.2, -0.46], [0.2, -0.5], [0.03, -0.45]];
+  for (const s of [1, -1]) {
+    const espejo = p => (s > 0 ? p : p.map(([a, b]) => [-a, b]).reverse());
+    const ala = plancha(espejo(semiala), 0.014, gris);
+    ala.geometry.rotateX(Math.PI / 2);            // (la planta, en el plano xz)
+    ala.position.set(0, -0.03, 0);
+    ala.rotation.z = s * 0.08;                    // (diedro)
+    g.add(ala);
+    const cola = plancha(espejo(semicola), 0.01, gris);
+    cola.geometry.rotateX(Math.PI / 2);
+    cola.position.set(0, 0.035, 0);
+    cola.rotation.z = s * 0.1;
+    g.add(cola);
+    // winglet, morado
+    const wl = plancha([[-0.13, 0], [-0.17, 0.07], [-0.2, 0.07], [-0.19, 0]], 0.008, morado);
+    wl.geometry.rotateY(-Math.PI / 2);
+    wl.position.set(s * 0.5, -0.03 + 0.5 * Math.sin(0.08), 0);     // (en la punta del ala, que sube con el diedro)
+    g.add(wl);
+    // motor bajo el ala, con su pilón y la toma oscura
+    const motor = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.03, 0.17, 24).rotateX(Math.PI / 2), blanco);
+    motor.position.set(s * 0.18, -0.075, 0.08);
+    g.add(motor);
+    const labio = new THREE.Mesh(new THREE.TorusGeometry(0.033, 0.006, 8, 24), gris);
+    labio.position.set(s * 0.18, -0.075, 0.165);
+    g.add(labio);
+    const toma = new THREE.Mesh(new THREE.CircleGeometry(0.031, 24), oscuro);
+    toma.position.set(s * 0.18, -0.075, 0.16);
+    g.add(toma);
+    const pilon = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.04, 0.09), gris);
+    pilon.position.set(s * 0.18, -0.045, 0.05);
+    g.add(pilon);
+  }
+  const deriva = plancha([[-0.3, 0.04], [-0.46, 0.27], [-0.52, 0.27], [-0.5, 0.03]], 0.012, morado);
+  deriva.geometry.rotateY(-Math.PI / 2);          // (la planta, en el plano yz)
+  g.add(deriva);
+  // luces: roja a la izquierda, verde a la derecha y un destello blanco en la cola
+  const luz = (color, x, y, z) => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(0.014, 10, 8), new THREE.MeshBasicMaterial({ color }));
+    m.position.set(x, y, z);
+    g.add(m);
+    return m;
+  };
+  luz(0xff3040, -0.505, 0.0, -0.17);
+  luz(0x30ff7a, 0.505, 0.0, -0.17);
+  g.userData.destello = luz(0xffffff, 0, 0.035, -0.505);
+  return g;
+}
+
+// Un solo WebGL fuera de la página dibuja dos veces: lo que está por delante del coxis (z > 0) va al lienzo de encima de la
+// foto y lo de detrás, al de debajo. Así el avión y la estela cruzan por detrás del hueso sin saltos.
+const RADIO_ORBITA = 3.1, VUELTA_S = 10, ALABEO = 0.38, ESCALA_AVION = 1.2, PUNTOS_ESTELA = 64, LARGO_ESTELA = 2.2;
+const lienzosAvion = [document.getElementById('avion'), document.getElementById('avion-detras')];
+const av = lienzosAvion[0] && (() => {
+  const r = new THREE.WebGLRenderer({ canvas: document.createElement('canvas'), antialias: true, alpha: true });
+  r.setClearColor(0x000000, 0);
+  const esc = new THREE.Scene();
+  esc.add(new THREE.HemisphereLight(0xffffff, 0x9fb0a8, 1.4));
+  const sol = new THREE.DirectionalLight(0xffffff, 2.4);
+  sol.position.set(-3, 6, 5);
+  const contra = new THREE.DirectionalLight(0x9a6cff, 0.8);
+  contra.position.set(4, 1, -4);
+  esc.add(sol, contra);
+  // 100 px de la diapositiva por unidad en el centro de la órbita: los lienzos (800 × 400) ven 8 × 4
+  const dist = 14, elev = 0.27;
+  const cam = new THREE.PerspectiveCamera(2 * Math.atan(2 / dist) * 180 / Math.PI, 2, 1, 40);
+  cam.position.set(0, dist * Math.sin(elev), dist * Math.cos(elev));
+  cam.lookAt(0, 0, 0);
+  const avion = hacerAvion();
+  avion.scale.setScalar(ESCALA_AVION);
+  esc.add(avion);
+  // la estela: una cinta morada que sigue la órbita por detrás del avión y se apaga
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PUNTOS_ESTELA * 2 * 3), 3));
+  const col = new Float32Array(PUNTOS_ESTELA * 2 * 4);
+  const lila = new THREE.Color(0x7a3fd0);
+  for (let k = 0; k < PUNTOS_ESTELA; k++) {
+    const f = k / (PUNTOS_ESTELA - 1), alfa = 0.5 * (1 - f) * (1 - f) * Math.min(1, k / 3);
+    for (const j of [0, 1]) col.set([lila.r, lila.g, lila.b, alfa], (2 * k + j) * 4);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 4));
+  const idx = [];
+  for (let k = 0; k < PUNTOS_ESTELA - 1; k++) idx.push(2 * k, 2 * k + 1, 2 * k + 2, 2 * k + 1, 2 * k + 3, 2 * k + 2);
+  geo.setIndex(idx);
+  const estela = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false,
+    side: THREE.DoubleSide }));
+  estela.frustumCulled = false;
+  esc.add(estela);
+  const cortes = [new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)];
+  return { r, esc, cam, avion, estela, cortes, ctx: lienzosAvion.map(l => l.getContext('2d')), ang: 0, w: 0, h: 0 };
+})();
+
+// en la órbita, el punto del ángulo a (por delante va de izquierda a derecha, y sube y baja un poco) y su rumbo
+const enOrbita = (a, v) => v.set(RADIO_ORBITA * Math.cos(a), 0.14 * Math.sin(2 * a), -RADIO_ORBITA * Math.sin(a));
+const rumboOrbita = (a, v) => v.set(-Math.sin(a), 0.28 * Math.cos(2 * a) / RADIO_ORBITA, -Math.cos(a)).normalize();
+const vAv = new THREE.Vector3(), vAv2 = new THREE.Vector3(), vAv3 = new THREE.Vector3();
+
+function avionFotograma(dt, t) {
+  if (!av || !document.querySelector('#cierre.present:not(.acto2)')) return;
+  const caja = lienzosAvion[0].getBoundingClientRect();
+  if (caja.width < 2) return;
+  const dpr = Math.min(window.devicePixelRatio, 2);
+  if (Math.abs(caja.width - av.w) > 0.5 || Math.abs(caja.height - av.h) > 0.5) {
+    av.w = caja.width; av.h = caja.height;
+    av.r.setPixelRatio(dpr);
+    av.r.setSize(av.w, av.h, false);
+    for (const l of lienzosAvion) { l.width = Math.round(av.w * dpr); l.height = Math.round(av.h * dpr); }
+  }
+  av.ang += dt * 2 * Math.PI / VUELTA_S;
+  const a = av.ang;
+  const pos = enOrbita(a, vAv), rumbo = rumboOrbita(a, vAv2);
+  av.avion.position.copy(pos);
+  // alabeado hacia dentro de la curva
+  av.avion.up.set(-Math.cos(a) * Math.sin(ALABEO), Math.cos(ALABEO), Math.sin(a) * Math.sin(ALABEO));
+  av.avion.lookAt(vAv3.copy(pos).add(rumbo));
+  av.avion.userData.destello.visible = (t % 1.3) < 0.09;
+  // la estela, desde la cola hacia atrás, de cara a la cámara y abriéndose un poco
+  const p = av.estela.geometry.attributes.position;
+  const cola = 0.42 * ESCALA_AVION / RADIO_ORBITA;
+  for (let k = 0; k < PUNTOS_ESTELA; k++) {
+    const ak = a - cola - k * LARGO_ESTELA / PUNTOS_ESTELA;
+    enOrbita(ak, vAv);
+    rumboOrbita(ak, vAv2);
+    vAv3.subVectors(av.cam.position, vAv).cross(vAv2).normalize().multiplyScalar(0.025 + 0.05 * k / PUNTOS_ESTELA);
+    p.setXYZ(2 * k, vAv.x + vAv3.x, vAv.y + vAv3.y - 0.03, vAv.z + vAv3.z);
+    p.setXYZ(2 * k + 1, vAv.x - vAv3.x, vAv.y - vAv3.y - 0.03, vAv.z - vAv3.z);
+  }
+  p.needsUpdate = true;
+  // delante y detrás del coxis, cada uno a su lienzo
+  for (let i = 0; i < 2; i++) {
+    av.r.clippingPlanes = [av.cortes[i]];
+    av.r.render(av.esc, av.cam);
+    const c = av.ctx[i];
+    c.clearRect(0, 0, c.canvas.width, c.canvas.height);
+    c.drawImage(av.r.domElement, 0, 0);
+  }
 }
 
 // ---------------------------------------------------------------- arranque

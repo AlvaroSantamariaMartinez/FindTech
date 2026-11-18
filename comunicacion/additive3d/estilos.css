@@ -281,6 +281,10 @@ section.acto2 .acto.dos .titulo .l > span { animation: sale 1.1s var(--suave) bo
 section.acto2 .acto.dos .firma { animation: sube 1s var(--suave) 1.6s both; }
 section.present .acto.dos .raya { animation: none; }
 section.acto2 .acto.dos .raya { background: var(--lila); animation: traza 1s var(--suave) 1.3s both; }
+/* el avión que da vueltas al coxis (el centro de los lienzos cae en el coxis de la foto): lo que va por detrás se dibuja
+   en el lienzo de debajo de la foto, y el hueso lo tapa */
+.avion { position: absolute; left: -104px; top: 181px; width: 800px; height: 400px; pointer-events: none; }
+.avion.detras { z-index: -1; }
 
 /* ------------------------------------------------------------------ pie */
 .pie { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 2vw; padding: 1.5vh 7.5vw 2.2vh 4.4vw; font-size: max(11px, 1.05vw); font-weight: 650; color: var(--tinta); opacity: .75; pointer-events: none; transition: color .8s; }
