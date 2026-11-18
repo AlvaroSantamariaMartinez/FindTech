@@ -41,7 +41,8 @@ en `salida/capturas-additive3d` para revisarlas.
   red SynthSeg. Los cortes de la simulación y el de la diapositiva de la red neuronal son de esa misma resonancia. No hay
   datos de pacientes.
 - En «Realidad mixta» (la 9) no hay fotos: unas gafas escanean el cerebro, su gemelo digital encaja encima y se
-  encienden las venas. Las gafas están modeladas en la propia escena. Las venas son la red que MRAnalyzer traza por
+  encienden las venas. Las gafas son unas Meta Quest 3 modeladas en la propia escena (las de la app de
+  realidad aumentada). Las venas son la red que MRAnalyzer traza por
   los surcos de ese cerebro (`mranalyzer/vasos.py`), sin las ramitas más finas: es generada, no sale de la
   resonancia.
 - El molde de la simulación es una caja de ejemplo, no un molde de fabricación.

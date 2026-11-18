@@ -352,45 +352,61 @@ function rectRedondo(forma, x, y, w, h, r) {
   forma.lineTo(x, y + r); forma.quadraticCurveTo(x, y, x + r, y);
   return forma;
 }
-// Las gafas, mirando hacia +z: carcasa clara, frente negro brillante con sus cámaras, almohadilla y cintas.
+// Las gafas: unas Meta Quest 3, mirando hacia +z. Carcasa blanca con el frente en blanco y las tres «pastillas» negras
+// verticales (las de los lados con dos cámaras cada una; la del medio, con el sensor de profundidad), las dos cámaras de
+// las esquinas de abajo, la almohadilla oscura, los brazos laterales y la cinta de tela gris por detrás.
 function hacerGafas() {
   const m = o => { const x = new THREE.MeshPhysicalMaterial({ transparent: true, opacity: 0, ...o }); mx.mats.push(x); return x; };
-  const carcasa = m({ color: 0xeef0f2, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.25 });
-  const negro = m({ color: 0x07080b, roughness: 0.12, metalness: 0.25, clearcoat: 1, clearcoatRoughness: 0.04 });
-  const gris = m({ color: 0x4d535b, roughness: 0.85 });
-  const lente = m({ color: 0x1a1d24, roughness: 0.05, metalness: 0.6, clearcoat: 1 });
+  const carcasa = m({ color: 0xf3f4f6, roughness: 0.38, clearcoat: 0.55, clearcoatRoughness: 0.3 });
+  const negro = m({ color: 0x0b0c10, roughness: 0.1, metalness: 0.3, clearcoat: 1, clearcoatRoughness: 0.03 });
+  const lente = m({ color: 0x4a5160, roughness: 0.03, metalness: 0.85, clearcoat: 1 });
+  const almohadilla = m({ color: 0x2b2e34, roughness: 0.9 });
+  const tela = m({ color: 0x8a8f96, roughness: 0.95 });
+  const brazo = m({ color: 0xe4e6e9, roughness: 0.45 });
   const g = mx.gafas;
-  const cuerpo = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.46, -0.19, 0.92, 0.38, 0.17),
-    { depth: 0.22, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 5, curveSegments: 20 });
-  cuerpo.translate(0, 0, -0.11);
+  // el cuerpo: ancho, poco alto y con los cantos muy redondeados; el frente, algo más estrecho (se afila hacia delante)
+  const cuerpo = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.47, -0.17, 0.94, 0.34, 0.16),
+    { depth: 0.2, bevelEnabled: true, bevelThickness: 0.07, bevelSize: 0.06, bevelSegments: 8, curveSegments: 24 });
+  cuerpo.translate(0, 0, -0.1);
   g.add(new THREE.Mesh(cuerpo, carcasa));
-  const frente = new THREE.Mesh(new THREE.ShapeGeometry(rectRedondo(new THREE.Shape(), -0.43, -0.165, 0.86, 0.33, 0.15), 20), negro);
-  frente.position.z = 0.162;
-  g.add(frente);
-  for (const [x, y] of [[-0.25, 0.02], [0, 0.04], [0.25, 0.02], [-0.33, -0.09], [0.33, -0.09]]) {
-    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.02, 20), lente);
-    c.rotation.x = Math.PI / 2;
-    c.position.set(x, y, 0.168);
+  const z = 0.172;   // (la cara de delante)
+  // las tres pastillas
+  for (const [x, alto, ancho] of [[-0.25, 0.2, 0.085], [0, 0.16, 0.07], [0.25, 0.2, 0.085]]) {
+    const p = new THREE.Mesh(new THREE.ShapeGeometry(rectRedondo(new THREE.Shape(), -ancho / 2, -alto / 2, ancho, alto, ancho / 2), 16), negro);
+    p.position.set(x, 0.005, z);
+    g.add(p);
+    const camaras = x === 0 ? [[0, 0.03, 0.018], [0, -0.035, 0.01]] : [[0, 0.045, 0.024], [0, -0.045, 0.024]];
+    for (const [cx, cy, r] of camaras) {
+      const c = new THREE.Mesh(new THREE.CircleGeometry(r, 24), lente);
+      c.position.set(x + cx, 0.005 + cy, z + 0.002);
+      g.add(c);
+    }
+  }
+  // las cámaras de las esquinas de abajo, mirando un poco hacia abajo y hacia fuera
+  for (const lado of [-1, 1]) {
+    const c = new THREE.Mesh(new THREE.CircleGeometry(0.02, 20), negro);
+    c.position.set(lado * 0.4, -0.15, z - 0.03);
+    c.rotation.set(0.5, lado * 0.45, 0);
     g.add(c);
   }
-  const led = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.012), new THREE.MeshBasicMaterial({ color: 0xb48cff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
-  led.position.set(0, -0.12, 0.166);
-  g.add(led);
-  mx.led = led;
-  const cara = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.4, -0.15, 0.8, 0.3, 0.13), { depth: 0.12, bevelEnabled: false, curveSegments: 16 });
-  cara.translate(0, 0, -0.27);
-  g.add(new THREE.Mesh(cara, gris));
-  const trasera = new THREE.TorusGeometry(0.5, 0.035, 10, 60, Math.PI * 1.25);
-  trasera.rotateZ(-0.125 * Math.PI);
-  trasera.rotateX(-Math.PI / 2);
-  trasera.scale(1, 1, 1.35);
-  trasera.translate(0, 0, -0.17);
-  g.add(new THREE.Mesh(trasera, gris));
-  const arriba = new THREE.TorusGeometry(0.55, 0.026, 8, 36, Math.PI / 2);
-  arriba.rotateY(Math.PI / 2);
-  arriba.scale(1, 0.55, 1);
-  arriba.translate(0, -0.05, -0.12);
-  g.add(new THREE.Mesh(arriba, gris));
+  const led = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.01), new THREE.MeshBasicMaterial({ color: 0xb48cff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+  mx.led = led;   // (sin luz a la vista: las Quest 3 no la llevan; se queda para no tocar el resto)
+  // la almohadilla de la cara
+  const cara = new THREE.ExtrudeGeometry(rectRedondo(new THREE.Shape(), -0.42, -0.14, 0.84, 0.28, 0.13), { depth: 0.1, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 3, curveSegments: 16 });
+  cara.translate(0, 0, -0.29);
+  g.add(new THREE.Mesh(cara, almohadilla));
+  // los brazos laterales (rígidos, del color de la carcasa) y la cinta de tela que da la vuelta por detrás
+  for (const lado of [-1, 1]) {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.1, 0.32), brazo);
+    b.position.set(lado * 0.5, 0.0, -0.3);
+    b.rotation.y = lado * -0.12;
+    g.add(b);
+  }
+  const cinta = new THREE.TorusGeometry(0.5, 0.03, 8, 64, Math.PI);
+  cinta.rotateX(-Math.PI / 2);
+  cinta.scale(1.04, 2.0, 1.15);
+  cinta.translate(0, 0, -0.44);
+  g.add(new THREE.Mesh(cinta, tela));
   g.scale.setScalar(0.85);
 }
 
