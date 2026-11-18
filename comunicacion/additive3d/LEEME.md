@@ -13,6 +13,12 @@ que se abre con doble clic en Chrome o Edge, sin servidor y sin internet.
 - En «Simulación» (la 8), cada avance pasa a la etapa siguiente y el retroceso vuelve a la anterior. Con las teclas
   **1** a **6**, o tocando una etapa, se salta a ella. Después de la última etapa, el avance pasa de diapositiva.
 - En la última, el primer avance cambia al cierre («Ayúdanos a mejorar la medicina.»).
+- **M**, o el altavoz del pie: quita y pone el sonido. Se recuerda para la próxima vez.
+
+Tiene efectos de sonido: el cambio de diapositiva, cada etapa de la simulación, las neuronas de la red, el escaneo de
+las gafas, los contadores, el avión del cierre (más fuerte por delante, apagado detrás del hueso, y de un altavoz a
+otro) y el final. Se generan en el navegador, sin archivos de audio. El navegador no deja sonar nada hasta la primera
+tecla o clic, así que la portada es muda hasta que se pasa.
 
 `construir.py artefacto` prepara en `salida/artefacto-additive3d` la copia para publicarla como página en línea.
 
@@ -24,6 +30,7 @@ que se abre con doble clic en Chrome o Edge, sin servidor y sin internet.
 | Colores, tamaños y animaciones | `estilos.css` |
 | Cerebro en 3D y simulación | `escena.js` |
 | Cambio de diapositiva, contadores y dibujo de la red neuronal | `app.js` |
+| Efectos de sonido | `sonido.js` |
 | Fotos y cerebro | `herramientas/preparar.py` y `herramientas/cerebro_secciones.py` |
 | Venas de la realidad mixta | `herramientas/vasos_cerebro.py` |
 

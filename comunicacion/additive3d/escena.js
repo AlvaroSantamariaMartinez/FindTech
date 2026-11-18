@@ -705,9 +705,14 @@ const av = lienzosAvion[0] && (() => {
 const enOrbita = (a, v) => v.set(RADIO_ORBITA * Math.cos(a), 0.14 * Math.sin(2 * a), -RADIO_ORBITA * Math.sin(a));
 const rumboOrbita = (a, v) => v.set(-Math.sin(a), 0.28 * Math.cos(2 * a) / RADIO_ORBITA, -Math.cos(a)).normalize();
 const vAv = new THREE.Vector3(), vAv2 = new THREE.Vector3(), vAv3 = new THREE.Vector3();
+let alAvion = () => {}, avionSonando = false;
+export function escucharAvion(f) { alAvion = f; }    // (para el sonido: dónde va, o null cuando no se ve)
 
 function avionFotograma(dt, t) {
-  if (!av || !document.querySelector('#cierre.present:not(.acto2)')) return;
+  if (!av || !document.querySelector('#cierre.present:not(.acto2)')) {
+    if (avionSonando) { avionSonando = false; alAvion(null); }
+    return;
+  }
   const caja = lienzosAvion[0].getBoundingClientRect();
   if (caja.width < 2) return;
   const dpr = Math.min(window.devicePixelRatio, 2);
@@ -725,6 +730,8 @@ function avionFotograma(dt, t) {
   av.avion.up.set(-Math.cos(a) * Math.sin(ALABEO), Math.cos(ALABEO), Math.sin(a) * Math.sin(ALABEO));
   av.avion.lookAt(vAv3.copy(pos).add(rumbo));
   av.avion.userData.destello.visible = (t % 1.3) < 0.09;
+  avionSonando = true;
+  alAvion(pos.x / RADIO_ORBITA, pos.z / RADIO_ORBITA, dt);
   // la estela, desde la cola hacia atrás, de cara a la cámara y abriéndose un poco
   const p = av.estela.geometry.attributes.position;
   const cola = 0.42 * ESCALA_AVION / RADIO_ORBITA;

@@ -68,13 +68,16 @@ window.__three = {donde};
     exporta = re.findall(r"^export (?:async )?(?:function|const|let) (\w+)", escena, flags=re.M)
     escena = re.sub(r"^export ", "", escena, flags=re.M)
     app = (AQUI / "app.js").read_text(encoding="utf-8")
+    sonido = re.sub(r"^export ", "", (AQUI / "sonido.js").read_text(encoding="utf-8"), flags=re.M)
+    app, n = re.subn(r"^import \{ sonido \} from './sonido.js';\n", "", app, flags=re.M)
+    assert n == 1, "no encuentro la línea que importa el sonido en app.js"
     app, n = re.subn(r"^import \{([^}]+)\} from './escena.js';\n", "", app, flags=re.M)
     assert n == 1, "no encuentro la línea que importa la escena en app.js"
     if artefacto:
         assert app.count("hash: true") == 1
         app = app.replace("hash: true", "hash: false")
     modulo = (f"const __escena = await (async () => {{\n{escena}\nreturn {{ {', '.join(exporta)} }};\n}})();\n"
-              f"const {{ {', '.join(exporta)} }} = __escena;\n{{\n{app}\n}}\n")
+              f"const {{ {', '.join(exporta)} }} = __escena;\n{{\n{sonido}\n{app}\n}}\n")
 
     guiones = "\n".join(f"<script>\n{guion((VENDOR / n).read_text(encoding='utf-8'))}\n</script>" for n in ("reveal.js", "notes.js"))
     html, n = re.subn(r'\s*<script src="[^"]+"></script>\s*<script src="[^"]+"></script>\s*<script type="module" src="app.js"></script>',

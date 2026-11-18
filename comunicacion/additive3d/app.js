@@ -1,5 +1,6 @@
 // Lo que mueve la presentación: reveal, los tonos del fondo, los títulos, los contadores, el pie y la simulación.
-import { irA, ponEtapa, escucharCuenta, escucharFase } from './escena.js';
+import { irA, ponEtapa, escucharCuenta, escucharFase, escucharAvion } from './escena.js';
+import { sonido } from './sonido.js';
 
 const exportar = location.search.includes('export');
 const secciones = [...document.querySelectorAll('.reveal .slides > section')];
@@ -24,11 +25,13 @@ for (let k = 0; k < 40; k++) {
 function contar(el) {
   const fin = parseFloat(el.dataset.hasta), miles = 'miles' in el.dataset;
   const t0 = performance.now(), dur = exportar ? 1 : 1700;
+  let ultimo = 0, tUltimo = 0;
   const pinta = v => { el.textContent = miles ? Math.round(v).toLocaleString('es-ES', { useGrouping: 'always' }) : String(Math.round(v)); };
   const paso = t => {
-    const k = Math.min(1, (t - t0) / dur);
-    pinta(fin * (1 - Math.pow(1 - k, 3)));
-    if (k < 1) requestAnimationFrame(paso);
+    const k = Math.min(1, (t - t0) / dur), v = Math.round(fin * (1 - Math.pow(1 - k, 3)));
+    pinta(v);
+    if (v !== ultimo && t - tUltimo > 45) { ultimo = v; tUltimo = t; sonido.tic(k); }    // (un tic por número)
+    if (k < 1) requestAnimationFrame(paso); else sonido.campana();
   };
   pinta(0);
   setTimeout(() => requestAnimationFrame(paso), exportar ? 0 : 700);
@@ -43,13 +46,17 @@ function etapa(n) {
   if (n === etapaPuesta) return;
   etapaPuesta = n;
   ponEtapa(n);
+  sonido.etapa(n);
   etapas.forEach((li, i) => { li.classList.toggle('activa', i === n); li.classList.toggle('hecha', i < n); });
   document.body.classList.toggle('sim-en-marcha', n >= 0);
   document.body.classList.toggle('sim-contando', n >= 1);
 }
 const etapaDeLaDiapositiva = sec => sec.querySelectorAll('.fragment.visible').length - 1;
 window.__etapa = n => Reveal.navigateFragment(n);       // (para las capturas)
+let cuentaOida = 0;
 escucharCuenta((n, total) => {
+  if (etapaPuesta === 1 && n > cuentaOida) sonido.seccion(n);      // (un tic por cada sección que sale)
+  cuentaOida = n;
   const c = document.getElementById('sim-cuenta');
   c.querySelector('b').textContent = n;
   c.querySelector('span').textContent = total;
@@ -57,7 +64,11 @@ escucharCuenta((n, total) => {
 etapas.forEach((li, i) => li.addEventListener('click', () => Reveal.navigateFragment(i)));
 // La realidad mixta: la escena dice en qué fase va (0 escaneo, 1 gemelo, 2 venas) y aquí se marca en la lista.
 const fasesMx = [...document.querySelectorAll('#mx-fases li')];
-escucharFase(n => fasesMx.forEach((li, i) => { li.classList.toggle('activa', i === n); li.classList.toggle('hecha', i < n); }));
+escucharFase(n => {
+  fasesMx.forEach((li, i) => { li.classList.toggle('activa', i === n); li.classList.toggle('hecha', i < n); });
+  sonido.fase(n);
+});
+escucharAvion((x, z, dt) => sonido.avion(x, z, dt));
 document.getElementById('reproducir').addEventListener('click', () => Reveal.next());
 document.addEventListener('keydown', ev => {
   if (Reveal.getCurrentSlide().id !== 'simulacion' || ev.ctrlKey || ev.altKey || ev.metaKey) return;
@@ -78,7 +89,7 @@ const red = (() => {
   // cada nivel: centro, lado y cuántos píxeles de lado le quedan a la imagen ahí
   const N = [[168, 196, 290, 0], [432, 286, 172, 48], [602, 376, 122, 24], [738, 448, 84, 12], [852, 512, 58, 6],
     [966, 448, 84, 12], [1102, 376, 122, 24], [1272, 286, 172, 48], [1592, 196, 290, 0]];
-  const mapas = [];
+  const mapas = [], sonada = N.map(() => false);
   let listo = false, activa = false, t0 = 0;
   function preparar() {
     if (listo || !entrada.complete || !salida.complete || !entrada.naturalWidth || !salida.naturalWidth) return listo;
@@ -105,6 +116,7 @@ const red = (() => {
     const onda = p * 1.45;                                   // (recorre los nueve niveles en algo más de la mitad del ciclo)
     const fundido = exportar ? 1 : Math.min(1, (1 - p) / 0.06);
     const act = N.map((_, k) => Math.min(1, Math.max(0, (onda - k / 8 * 0.86) / 0.07)) * fundido);
+    act.forEach((v, k) => { if (v > 0.5 && !sonada[k]) { sonada[k] = true; sonido.neurona(k); } else if (v === 0) sonada[k] = false; });
     pasos.forEach((li, i) => li.classList.toggle('activo', [act[0] > 0 && act[2] < 1, act[2] >= 1 && act[5] < 1, act[5] >= 1][i]));
     c.lineCap = 'round';
     c.font = '600 22px Inter, "Segoe UI", sans-serif';
@@ -174,7 +186,7 @@ const red = (() => {
     if (activa) dibujar((ms - t0) / 1000);
     requestAnimationFrame(bucle);
   })(0);
-  return { al(estar) { activa = estar; t0 = performance.now(); if (estar) dibujar(0); } };
+  return { al(estar) { activa = estar; t0 = performance.now(); sonada.fill(false); if (estar) dibujar(0); } };
 })();
 
 // ------------------------------------------------------------------ al cambiar de diapositiva
@@ -183,6 +195,7 @@ function tono(t) {
 }
 function alCambiar(ev) {
   const sec = ev.currentSlide, i = secciones.indexOf(sec);
+  sonido.pase();
   const acto2 = sec.id === 'cierre' && sec.querySelector('.fragment.visible');
   sec.classList.toggle('acto2', !!acto2);
   tono(acto2 ? 'oscuro' : sec.dataset.tono);
@@ -199,6 +212,7 @@ function alFragmento(ev, visible) {
   if (sec.id === 'simulacion') etapa(etapaDeLaDiapositiva(sec));
   if (sec.id === 'cierre') {
     sec.classList.toggle('acto2', visible);
+    if (visible) sonido.final(); else sonido.pase();
     tono(visible ? 'oscuro' : sec.dataset.tono);
     irA(visible ? 'final' : sec.dataset.escena);
   }

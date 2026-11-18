@@ -287,6 +287,13 @@ section.acto2 .acto.dos .raya { background: var(--lila); animation: traza 1s var
 .avion.detras { z-index: -1; }
 
 /* ------------------------------------------------------------------ pie */
+/* el altavoz: quita y pone el sonido (también con la tecla M) */
+.pie-sonido { pointer-events: auto; width: max(22px, 1.5vw); height: max(22px, 1.5vw); padding: 0; border: 0; background: none; color: inherit; cursor: pointer; opacity: .85; }
+.pie-sonido svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pie-sonido .altavoz { fill: currentColor; }
+.pie-sonido .tachado, .pie-sonido.apagado .ondas { display: none; }
+.pie-sonido.apagado .tachado { display: inline; }
+.pie-sonido:focus-visible { outline: 2px solid var(--morado); outline-offset: 3px; border-radius: 4px; }
 .pie { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 2vw; padding: 1.5vh 7.5vw 2.2vh 4.4vw; font-size: max(11px, 1.05vw); font-weight: 650; color: var(--tinta); opacity: .75; pointer-events: none; transition: color .8s; }
 .pie-barra { flex: 1; height: 3px; border-radius: 2px; background: color-mix(in srgb, var(--tinta) 14%, transparent); overflow: hidden; }
 .pie-barra i { display: block; height: 100%; width: 0; background: var(--morado); transition: width .9s var(--suave); }
