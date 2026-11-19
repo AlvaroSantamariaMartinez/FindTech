@@ -5,7 +5,7 @@ o el cerebro):
     python3 comunicacion/additive3d/herramientas/preparar.py cerebro ANALISIS SECCIONES
 
 - ``fotos``: las fotos del PowerPoint pasan a ``img/`` en WebP, al tamaño que se usa en pantalla.
-- ``cerebro``: el cerebro de la portada y de la simulación. ANALISIS es la salida de MRAnalyzer para la resonancia
+- ``cerebro``: el cerebro de la portada y del cierre. ANALISIS es la salida de MRAnalyzer para la resonancia
   pública «MRHead» de 3D Slicer (``cerebro_completo.stl``) y SECCIONES, lo que deja ``cerebro_secciones.py`` (las mallas
   de sus secciones y los cortes de la resonancia). No hay datos de pacientes. Las mallas se guardan en ``modelos/`` con
   las posiciones y los índices en 16 bits.
@@ -84,11 +84,7 @@ def cerebro(analisis: Path, secciones: Path):
          "centro_mm": [round(float(x), 4) for x in centro], "escala": escala, "mallas": salida},
         separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
     print(len(salida), "mallas", desde // 1024, "KB")
-    for f in sorted((secciones / "cortes").glob("corte_*.png")):
-        Image.open(f).convert("L").resize((256, 256), Image.LANCZOS).save(AQUI / "img" / f"{f.stem}.webp", quality=82, method=6)
-    # el corte de la diapositiva de la red neuronal y su segmentación (esta, sin suavizar: son etiquetas)
-    Image.open(secciones / "red_entrada.png").convert("L").resize((384, 384), Image.LANCZOS).save(AQUI / "img" / "red_entrada.webp", quality=86, method=6)
-    Image.open(secciones / "red_salida.png").resize((384, 384), Image.NEAREST).save(AQUI / "img" / "red_salida.png", optimize=True)
+    # (los cortes de la simulación y los de la red neuronal ya no son del cerebro: los hace torso.py con el TAC de tórax)
 
 
 if __name__ == "__main__":

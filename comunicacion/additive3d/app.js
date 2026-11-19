@@ -179,7 +179,7 @@ const red = (() => {
     c.globalAlpha = 0.9; c.strokeStyle = '#fff'; c.lineWidth = 4; c.fillStyle = 'rgba(100,34,184,.35)';
     c.beginPath(); c.roundRect(x0 - l0 / 2 + fx * lado + 3, y0 - l0 / 2 + fy * lado + 3, lado - 6, lado - 6, 8); c.fill(); c.stroke();
     c.globalAlpha = 1; c.fillStyle = TINTA; c.font = '700 26px Inter, "Segoe UI", sans-serif';
-    c.fillText('Resonancia', x0, y0 + l0 / 2 + 42);
+    c.fillText('TAC', x0, y0 + l0 / 2 + 42);
     c.fillText('Segmentación', N[8][0], N[8][1] + N[8][2] / 2 + 42);
   }
   (function bucle(ms) {

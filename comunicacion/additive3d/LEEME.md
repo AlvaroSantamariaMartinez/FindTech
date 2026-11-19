@@ -28,11 +28,11 @@ tecla o clic, así que la portada es muda hasta que se pasa.
 | --- | --- |
 | Textos, orden de las diapositivas y notas | `presentacion.html` |
 | Colores, tamaños y animaciones | `estilos.css` |
-| Cerebro en 3D y simulación | `escena.js` |
+| Cerebro y torso en 3D, simulación y realidad mixta | `escena.js` |
 | Cambio de diapositiva, contadores y dibujo de la red neuronal | `app.js` |
 | Efectos de sonido | `sonido.js` |
-| Fotos y cerebro | `herramientas/preparar.py` y `herramientas/cerebro_secciones.py` |
-| Venas de la realidad mixta | `herramientas/vasos_cerebro.py` |
+| Fotos y cerebro (portada y cierre) | `herramientas/preparar.py` y `herramientas/cerebro_secciones.py` |
+| Torso, sus cortes, el corte de la red neuronal y los vasos | `herramientas/torso.py` |
 
 En «Material de desarrollo» (la 5) la protagonista es la impresora de hidrogel; la granja de impresoras va debajo, en pequeño.
 
@@ -44,14 +44,18 @@ en `salida/capturas-additive3d` para revisarlas.
 
 - Los textos y las fotos, del PowerPoint «Additive 3D Engineering». La foto de la impresora de hidrogel es una imagen
   generada, no una foto del prototipo.
-- El cerebro es real: lo hizo MRAnalyzer con la resonancia pública «MRHead» de 3D Slicer, y sus 27 secciones las separó la
-  red SynthSeg. Los cortes de la simulación y el de la diapositiva de la red neuronal son de esa misma resonancia. No hay
-  datos de pacientes.
-- En «Realidad mixta» (la 9) no hay fotos: unas gafas escanean el cerebro, su gemelo digital encaja encima y se
-  encienden las venas. Las gafas son unas Meta Quest 3 modeladas en la propia escena (las de la app de
-  realidad aumentada). Las venas son la red que MRAnalyzer traza por
-  los surcos de ese cerebro (`mranalyzer/vasos.py`), sin las ramitas más finas: es generada, no sale de la
-  resonancia.
+- El cerebro de la portada y del cierre es real: lo hizo MRAnalyzer con la resonancia pública «MRHead» de 3D Slicer, y
+  sus secciones las separó la red SynthSeg.
+- El torso de la red neuronal (la 7), la simulación (la 8) y la realidad mixta (la 9) sale del TAC de tórax público
+  «CTChest» de las muestras de 3D Slicer, segmentado con TotalSegmentator: piel, pulmones, costillas, columna,
+  corazón, grandes vasos, tráquea y esófago, entre otras: 18 estructuras en total. Los cortes y el corte de la red son de ese
+  mismo TAC. No hay datos de pacientes.
+- En la simulación, a partir de «Modelo 3D» la pieza se abre por delante: se ven las costillas, los pulmones, los
+  órganos y el hueco del tórax.
+- En «Realidad mixta» (la 9) no hay fotos: unas gafas escanean el torso, su gemelo digital encaja encima y el torso se
+  vuelve transparente: se ven las costillas, los pulmones, los órganos y los vasos encendidos. Las gafas son unas Meta Quest 3 modeladas en la propia escena (las de la app de realidad
+  aumentada). Los vasos son los del propio TAC (la aorta y sus ramas, las venas cavas y las venas pulmonares) y crecen
+  desde el corazón.
 - En la última, un avión de pasajeros da vueltas alrededor del coxis de la pelvis. Cuando pasa por detrás, el hueso lo
   tapa. El avión está modelado en la propia escena.
 - El molde de la simulación es una caja de ejemplo, no un molde de fabricación.

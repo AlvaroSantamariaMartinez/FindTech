@@ -1,1 +1,1 @@
-{"tipos": ["vena"], "vertices": 27080, "indices": 149520, "largo_max_mm": 216.93, "min": [-0.98934, -0.66097, -0.71746], "tam": [1.98926, 1.37365, 1.45986], "pos": [0, 27080], "largo": [162480, 27080], "idx": [216640, 149520]}
+{"origen": "vasos grandes del t\u00f3rax del mismo TAC (TotalSegmentator)", "vertices": 14996, "indices": 90000, "largo_max_mm": 550.27, "min": [-0.44804, -0.91028, -0.3377], "tam": [0.94402, 1.82055, 0.56251], "pos": [0, 14996], "largo": [89976, 14996], "idx": [119968, 90000]}

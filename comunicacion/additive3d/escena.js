@@ -1,9 +1,13 @@
-// La escena 3D que va detrás de las diapositivas. Es un cerebro real: lo hizo MRAnalyzer con la resonancia pública
-// «MRHead» de 3D Slicer, y sus 27 secciones las separó la red SynthSeg. No es un paciente.
+// La escena 3D que va detrás de las diapositivas. Nada es de un paciente:
+//   - el cerebro es real: lo hizo MRAnalyzer con la resonancia pública «MRHead» de 3D Slicer, y sus secciones las separó
+//     la red SynthSeg;
+//   - el torso sale del TAC de tórax público «CTChest» de 3D Slicer, segmentado con TotalSegmentator
+//     (herramientas/torso.py).
+// Lo que se ve:
 //   - Portada: el cerebro, girando.
-//   - Simulación: los cortes de la resonancia se comprimen y de ese bloque sale el cerebro, sección a sección; después
-//     pasa a malla, se cierra el molde, se cuela la silicona y aparece el gemelo digital con lo que lleva dentro.
-//   - Realidad mixta: unas gafas escanean el cerebro, el gemelo digital encaja encima y se encienden sus venas.
+//   - Simulación: los cortes del TAC se comprimen y de ese bloque sale el torso, estructura a estructura; después pasa
+//     a malla, se cierra el molde, se cuela la silicona y aparece el gemelo digital con lo que lleva dentro.
+//   - Realidad mixta: unas gafas escanean el torso, el gemelo digital encaja encima y se encienden sus vasos.
 //   - Cierre: un avión de pasajeros da vueltas al coxis de la pelvis y, al final, el cerebro como holograma.
 import * as THREE from '../presentacion/vendor/three.module.min.js';
 
@@ -82,8 +86,10 @@ function holograma(color, suma) {
 }
 
 // ---------------------------------------------------------------- lo que hay en la escena
-const pivote = new THREE.Group();          // el cerebro de la simulación y del cierre (lo que gira)
+const pivote = new THREE.Group();          // el torso de la simulación (lo que gira)
 escena.add(pivote);
+const pivoteFinal = new THREE.Group();     // el cerebro del cierre (gira con él)
+escena.add(pivoteFinal);
 const pCerebro = new THREE.Group();        // el de la portada
 escena.add(pCerebro);
 let cerebro = null, pieza = null, alambre = null, gemelo = null, final = null;
@@ -91,6 +97,10 @@ const secciones = [];                      // { malla, capa, centro (su altura m
 const dentroFinal = [];
 const planoBarrido = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10);    // (se ve lo que queda por debajo)
 const planoColada = new THREE.Plane(new THREE.Vector3(0, -1, 0), 10);
+// la ventana del torso: quita lo que queda por delante de z = constante (la piel, el esternón y la parte de delante de las
+// costillas) para que se vean los pulmones, los órganos y el hueco del tórax
+const planoCorte = new THREE.Plane(new THREE.Vector3(0, 0, -1), 10);
+const ABIERTOS = ['costillas', 'esternon', 'cintura'];
 const forma = { alto: 1.44 * ESCALA, lado: 2.3, altoCortes: 1.3 };
 
 // la sombra de contacto
@@ -184,7 +194,7 @@ for (const [r, arco, v] of [[1.12, Math.PI * 1.4, 0.5], [1.24, Math.PI * 0.5, -0
 // 3 molde, 4 fabricación, 5 gemelo digital.
 let modo = 'cerebro', etapa = -1, tEtapa = 0, tModo = 0;
 let alContar = () => {};
-const a = { pila: 0, sep: 1, cerebro: 0, alambre: 0, molde: 0, cierre: 0, tornillos: 0, pieza: 0, gemelo: 0, final: 0, sombra: 0, x: 1.0, barrido: 0 };
+const a = { corte: 1.2, pila: 0, sep: 1, cerebro: 0, alambre: 0, molde: 0, cierre: 0, tornillos: 0, pieza: 0, gemelo: 0, final: 0, sombra: 0, x: 1.0, barrido: 0 };
 let vistas = -1;
 const SUBE_EN = 5.2;        // segundos que tarda el barrido en recorrer el cerebro
 const ABRE_EN = 7.0;        // cuándo se aclara lo de fuera para enseñar lo de dentro
@@ -235,6 +245,8 @@ function fotograma() {
   // ---- simulación
   pivote.position.set(a.x, 0, 0);
   pivote.rotation.y += (sim && etapa === 1 ? 0.2 : sim && (etapa === 3 || etapa === 4) ? 0.1 : 0.22) * dt;
+  pivoteFinal.position.copy(pivote.position);
+  pivoteFinal.rotation.y = pivote.rotation.y;
 
   // Los cortes: separados en «imagen». Al segmentar se comprimen en un bloque, que sube con el barrido: de él va saliendo
   // el modelo, y al llegar arriba se apaga.
@@ -259,15 +271,16 @@ function fotograma() {
   barrido.position.set(a.x, sim && etapa === 1 ? Math.min(nivel, arriba) : arriba, 0);
   barrido.visible = a.barrido > 0.01;
 
-  // las secciones: salen por debajo del barrido; después lo de fuera se queda casi transparente y se ven los núcleos y
-  // los ventrículos
+  // las estructuras: salen por debajo del barrido (la piel, medio transparente, para que se vea lo de dentro); después lo
+  // de fuera se queda casi transparente y se ven el corazón, los vasos y la tráquea
   planoBarrido.constant = sim && etapa === 1 ? Math.min(nivel, arriba + 1) : 10;
   const abierto = sim && etapa === 1 && tEtapa > ABRE_EN;
   let n = 0;
   for (const p of secciones) {
     let obj = 0, color = p.color;
-    if (sim && etapa === 1) { obj = abierto && p.capa < 2 ? 0.13 : 1; if (p.centro < nivel) n++; }
-    else if (sim && etapa === 5) { obj = p.capa === 2 ? 1 : 0; color = MORADO; }
+    if (sim && etapa === 1) { obj = p.capa === 0 ? (abierto ? 0.06 : 0.3) : abierto && p.capa < 2 ? 0.13 : 1; if (p.centro < nivel) n++; }
+    else if (sim && etapa >= 2 && etapa <= 4) obj = p.capa === 0 ? 0 : 1;          // (dentro de la pieza abierta)
+    else if (sim && etapa === 5) { obj = p.capa === 2 ? 1 : p.capa === 1 ? 0.3 : 0; color = p.capa === 2 ? MORADO : 0xb79cf0; }
     const m = p.malla.material;
     m.opacity = s(m.opacity, obj, obj > 0 ? 6 : 3, dt);
     m.color.lerp(colorTmp.set(color), 1 - Math.exp(-3 * dt));
@@ -276,6 +289,9 @@ function fotograma() {
   }
   if (sim && etapa === 1 && n !== vistas) { vistas = n; alContar(n, secciones.length); }
 
+  // la ventana: se abre al pasar a modelo 3D y se cierra en el gemelo
+  a.corte = s(a.corte, sim && etapa >= 2 && etapa <= 4 ? 0.12 : 1.2, 2, dt);
+  planoCorte.constant = a.corte;
   // el modelo 3D: la malla, a la vista un momento
   a.alambre = s(a.alambre, sim && etapa === 2 && tEtapa > 0.6 && tEtapa < 3.6 ? 1 : 0, 4, dt);
   if (alambre) { alambre.material.opacity = 0.3 * a.alambre; alambre.visible = a.alambre > 0.01; }
@@ -345,6 +361,7 @@ escena.add(mx.grupo, mx.gafas);
 let alFase = () => {};
 export function escucharFase(f) { alFase = f; }
 const MX = { escaneo: [1.3, 4.9], llega: [4.9, 7.1], venas: [7.4, 11.6] };
+const TAM_MX = 0.78;      // (el torso, más pequeño que en la simulación: así no choca con las gafas)
 
 function rectRedondo(forma, x, y, w, h, r) {
   forma.moveTo(x + r, y); forma.lineTo(x + w - r, y); forma.quadraticCurveTo(x + w, y, x + w, y + r);
@@ -411,12 +428,28 @@ function hacerGafas() {
   g.scale.setScalar(0.85);
 }
 
-function prepararMixta(geoCerebro, geoAlambre, vasos) {
+function prepararMixta(geoCerebro, geoAlambre, vasos, dentro) {
   const real = new THREE.Mesh(geoCerebro, new THREE.MeshStandardMaterial({ color: 0xd9a097, roughness: 0.55,
-    emissive: 0x7a3fe0, emissiveIntensity: 0 }));
+    emissive: 0x7a3fe0, emissiveIntensity: 0, transparent: true }));
   mx.real = real;
+  real.renderOrder = 3;
+  // lo de dentro: costillas, columna, pulmones y órganos (los vasos grandes van aparte, encendidos)
+  const VASOS = ['aorta', 'troncos', 'venas_pulmonares', 'cavas'];
+  const HUESOS = ['costillas', 'esternon', 'columna', 'cintura'];
+  mx.dentro = dentro.filter(p => !VASOS.includes(p.clave)).map(p => {
+    const m = new THREE.Mesh(p.geo, new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.6, transparent: true, opacity: 0,
+      depthWrite: false, side: THREE.DoubleSide }));
+    m.userData.base = HUESOS.includes(p.clave) ? 0.95 : p.clave.startsWith('pulmon') ? 0.3 : 0.85;
+    m.renderOrder = p.clave.startsWith('pulmon') ? 2 : 1;
+    m.visible = false;
+    mx.grupo.add(m);
+    return m;
+  });
+  geoCerebro.computeBoundingBox();
+  mx.arriba = geoCerebro.boundingBox.max.y;
+  mx.abajo = geoCerebro.boundingBox.min.y;
   mx.grupo.add(real);
-  // los puntos del escaneo: los vértices del cerebro, encendidos donde pasa el barrido
+  // los puntos del escaneo: los vértices del torso, encendidos donde pasa el barrido
   mx.puntos = new THREE.Points(geoCerebro, new THREE.ShaderMaterial({
     uniforms: { uFrente: { value: 2 }, uOp: { value: 0 }, uTiempo: tiempo },
     vertexShader: `uniform float uFrente; varying float vB; varying float vY;
@@ -455,7 +488,7 @@ function prepararMixta(geoCerebro, geoAlambre, vasos) {
         gl_FragColor = vec4(0.7, 0.5, 1.0, a * uOp); }`,
     transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }));
   escena.add(mx.haz);
-  // las venas: tubos con la distancia a la raíz de cada vértice (0–1); se dibujan creciendo hasta uFrente
+  // los vasos: su superficie, con la distancia de cada vértice al corazón (0–1); se dibujan creciendo hasta uFrente
   const q = new Uint16Array(vasos.bin, vasos.datos.pos[0], vasos.datos.pos[1] * 3);
   const pos = new Float32Array(q.length);
   for (let i = 0; i < q.length; i++) pos[i] = vasos.datos.min[i % 3] + q[i] / 65535 * vasos.datos.tam[i % 3];
@@ -509,24 +542,28 @@ function mixtaFotograma(dt, ancho) {
   const fase = tm < MX.escaneo[0] ? -1 : tm < MX.llega[0] ? 0 : tm < MX.venas[0] ? 1 : 2;
   if (activa && fase !== mx.fase) { mx.fase = fase; alFase(fase); }
   const e = MX.escaneo, l = MX.llega, v = MX.venas;
-  centroMx.set(0.3 * ancho, -0.12, 0);
+  centroMx.set(0.3 * ancho, -0.2, 0);
   mx.grupo.position.copy(centroMx);
-  // (gira despacio y llega de lado a las venas: de lado se ven las de Silvio y las que suben a la línea media)
+  // (gira despacio: escanea de tres cuartos y llega casi de frente a los vasos)
   mx.grupo.rotation.y = -0.75 + 0.07 * tModo;
-  // el cerebro real (más oscuro cuando se encienden las venas, para que resalten)
+  // el torso real: cuando se encienden los vasos se vuelve de cristal, como con los rayos X de las gafas
   const venasK = suave((tm - v[0]) / 1.2);
-  // (opaco siempre: entra creciendo, que fundido se ve el interior de la malla)
-  mx.grupo.scale.setScalar(0.7 + 0.3 * suave(tm / 1.0));
-  mx.real.material.color.setHex(0xd9a097).multiplyScalar(1 - 0.5 * venasK);
-  // el escaneo: el barrido baja por el cerebro
+  // (entra creciendo, que fundido se ve el interior de la malla)
+  mx.grupo.scale.setScalar(TAM_MX * (0.7 + 0.3 * suave(tm / 1.0)));
+  mx.real.material.color.setHex(0xd9a097).multiplyScalar(1 - 0.35 * venasK);
+  mx.real.material.opacity = 1 - 0.8 * venasK;
+  mx.real.material.depthWrite = venasK < 0.02;
+  for (const m of mx.dentro) { m.material.opacity = op * venasK * m.userData.base; m.visible = m.material.opacity > 0.01; }
+  // el escaneo: el barrido baja por el torso
   const k = (tm - e[0]) / (e[1] - e[0]);
-  const frente = 0.8 - 1.65 * suave(k);
+  const frente = mx.arriba - (mx.arriba - mx.abajo + 0.05) * suave(k);
   mx.puntos.material.uniforms.uFrente.value = tm < e[0] ? 2 : frente;
   mx.puntos.material.uniforms.uOp.value = op * (tm < e[0] ? 0 : tm < e[1] + 0.3 ? 1 : Math.max(0.25, 1 - (tm - e[1] - 0.3) / 1.2));
   const barre = op * (tm > e[0] && tm < e[1] + 0.2 ? Math.min(1, (tm - e[0]) * 3) * Math.min(1, (e[1] + 0.2 - tm) * 4) : 0);
   mx.anillo.material.opacity = 0.9 * barre;
-  mx.anillo.position.set(centroMx.x, centroMx.y + frente, 0);
-  // las gafas: entran por la izquierda y miran al cerebro
+  mx.anillo.position.set(centroMx.x, centroMx.y + frente * TAM_MX, 0);
+  mx.anillo.scale.setScalar(TAM_MX);
+  // las gafas: entran por la izquierda y miran al torso
   const entra = suave(tm / 1.3);
   gafasMx.set(centroMx.x + 1.05, 0.95, -1.1).add(tmpMx.set(0.9 * (1 - entra), 0.35 * (1 - entra), 0));
   mx.gafas.position.copy(gafasMx);
@@ -534,7 +571,7 @@ function mixtaFotograma(dt, ancho) {
   mx.gafas.position.y += Math.sin(tModo * 1.3) * 0.015;
   for (const m of mx.mats) m.opacity = op * entra;
   mx.led.material.opacity = op * entra * (0.35 + 0.65 * (tm > e[0] && tm < l[1] ? 0.5 + 0.5 * Math.sin(tModo * 10) : 0.2));
-  // el haz, de las gafas al cerebro, mientras escanea
+  // el haz, de las gafas al torso, mientras escanea
   const delante = tmpMx.set(0, 0, 0.2).applyQuaternion(mx.gafas.quaternion);
   const desde = gafasMx.clone().add(delante), hasta = centroMx.clone();
   const largoHaz = desde.distanceTo(hasta);
@@ -543,29 +580,29 @@ function mixtaFotograma(dt, ancho) {
   mx.haz.quaternion.copy(giroMx);
   mx.haz.scale.set(0.95, largoHaz, 0.95);
   mx.haz.material.uniforms.uOp.value = op * (tm > e[0] - 0.3 && tm < e[1] + 0.5 ? Math.min(1, (tm - e[0] + 0.3) * 2) * Math.min(1, (e[1] + 0.5 - tm) * 2) : 0);
-  // el gemelo: aparece junto a las gafas y baja a encajar sobre el cerebro
+  // el gemelo: aparece junto a las gafas y baja a encajar sobre el torso
   const kl = suave((tm - l[0]) / (l[1] - l[0]));
   const aparece = Math.min(1, Math.max(0, (tm - l[0]) / 0.5));
   // (llega por delante, desde arriba a la izquierda, para que se vea encajar)
   mx.gemeloG.position.copy(centroMx).add(tmpMx.set(-0.75, 0.8, 1.05).multiplyScalar(1 - kl));
   mx.gemeloG.rotation.y = mx.grupo.rotation.y + 0.9 * (1 - kl);
   mx.gemeloG.rotation.z = 0.25 * (1 - kl);
-  mx.gemeloG.scale.setScalar(1.0 + 0.012 + 0.25 * (1 - kl));
+  mx.gemeloG.scale.setScalar(TAM_MX * (1.0 + 0.012 + 0.25 * (1 - kl)));
   const encajado = tm > l[1];
   mx.gemelo.material.uniforms.uOp.value = op * aparece * (encajado ? 0.42 - 0.12 * venasK : 0.9);
   mx.red.material.opacity = op * aparece * (encajado ? 0.1 * (1 - venasK) + 0.03 : 0.35);
-  // el encaje: una onda que se abre y un destello en el cerebro
+  // el encaje: una onda que se abre y un destello en el torso
   const tOnda = tm - l[1];
   const onda = tOnda > 0 && tOnda < 1.1 ? tOnda / 1.1 : -1;
   mx.onda.visible = ver && onda >= 0;
   if (onda >= 0) {
     mx.onda.position.copy(centroMx);
     mx.onda.quaternion.copy(camara.quaternion);
-    mx.onda.scale.setScalar(1.0 + 1.1 * onda);
+    mx.onda.scale.setScalar(TAM_MX * (1.0 + 1.1 * onda));
     mx.onda.material.opacity = op * (1 - onda) * 0.9;
   }
   mx.real.material.emissiveIntensity = onda >= 0 ? 0.7 * (1 - onda) : 0;
-  // las venas, creciendo desde la raíz
+  // los vasos, creciendo desde el corazón
   mx.venas.material.uniforms.uFrente.value = tm < v[0] ? 0 : 1.08 * suave((tm - v[0]) / (v[1] - v[0]));
   mx.venas.material.uniforms.uOp.value = op;
   mx.halo.material.uniforms.uOp.value = 0.8 * op;
@@ -757,48 +794,55 @@ function avionFotograma(dt, t) {
 // ---------------------------------------------------------------- arranque
 export const lista = (async () => {
   requestAnimationFrame(fotograma);
-  const datos = await paquete('cerebro');
-  forma.lado = datos.lado_cortes * ESCALA;
-  forma.altoCortes = datos.alto_cortes * ESCALA;
-  const entero = datos.mallas.find(p => p.clave === 'cerebro');
-  forma.alto = entero.tam[1] * ESCALA;
-
-  cerebro = new THREE.Mesh(entero.geo, arcilla(0xeba896, 0));
+  const [datosCerebro, datos] = await Promise.all([paquete('cerebro'), paquete('torso')]);
+  // el cerebro: el de la portada y el holograma del cierre, con sus núcleos y ventrículos encendidos
+  const enteroCerebro = datosCerebro.mallas.find(p => p.clave === 'cerebro');
+  cerebro = new THREE.Mesh(enteroCerebro.geo, arcilla(0xeba896, 0));
   cerebro.scale.setScalar(0.95);
   pCerebro.add(cerebro);
+  pivoteFinal.scale.setScalar(ESCALA);
+  final = new THREE.Mesh(enteroCerebro.geo, holograma(0x9a6cff, true));
+  final.visible = false;
+  pivoteFinal.add(final);
+  for (const p of datosCerebro.mallas) {
+    if (p.capa !== 2) continue;
+    const f = new THREE.Mesh(p.geo, new THREE.MeshBasicMaterial({ color: 0xcdb5f5, transparent: true, opacity: 0, depthWrite: false,
+      blending: THREE.AdditiveBlending }));
+    f.visible = false;
+    pivoteFinal.add(f);
+    dentroFinal.push(f);
+  }
 
+  // el torso: la simulación y la realidad mixta
+  forma.lado = datos.lado_cortes * ESCALA;
+  forma.altoCortes = Math.min(datos.alto_cortes * ESCALA, 1.15);     // (la pila, que quepa en la diapositiva)
+  const entero = datos.mallas.find(p => p.clave === 'torso');
+  forma.alto = entero.tam[1] * ESCALA;
   pivote.scale.setScalar(ESCALA);
   for (const p of datos.mallas) {
-    if (p.clave === 'cerebro') continue;
+    if (p.clave === 'torso') continue;
     const m = new THREE.Mesh(p.geo, new THREE.MeshStandardMaterial({ color: p.color, roughness: 0.62, transparent: true, opacity: 0,
-      side: THREE.DoubleSide, clippingPlanes: [planoBarrido] }));
+      side: THREE.DoubleSide, clippingPlanes: ABIERTOS.includes(p.clave) ? [planoBarrido, planoCorte] : [planoBarrido] }));
     m.visible = false;
     m.renderOrder = 2 - p.capa;      // (lo de dentro, antes: así se ve a través de lo que se está apagando)
     pivote.add(m);
     secciones.push({ malla: m, capa: p.capa, centro: (p.min[1] + p.tam[1] / 2) * ESCALA, color: p.color });
-    if (p.capa === 2) {
-      const f = new THREE.Mesh(p.geo, new THREE.MeshBasicMaterial({ color: 0xcdb5f5, transparent: true, opacity: 0, depthWrite: false,
-        blending: THREE.AdditiveBlending }));
-      f.visible = false;
-      pivote.add(f);
-      dentroFinal.push(f);
-    }
   }
   pieza = new THREE.Mesh(entero.geo, arcilla(ARCILLA, 0));
-  pieza.material.clippingPlanes = [planoColada];
+  pieza.material.clippingPlanes = [planoColada, planoCorte];
+  pieza.material.side = THREE.DoubleSide;       // (abierta por delante: se ve el hueco por dentro de la piel)
   pieza.visible = false;
   pieza.renderOrder = 3;
   alambre = new THREE.LineSegments(new THREE.WireframeGeometry(entero.geo), new THREE.LineBasicMaterial({ color: MORADO, transparent: true, opacity: 0 }));
   alambre.scale.setScalar(1.003);
+  alambre.material.clippingPlanes = [planoCorte];
   alambre.visible = false;
   gemelo = new THREE.Mesh(entero.geo, holograma(0x7a3fe0, false));
   gemelo.visible = false;
   gemelo.renderOrder = 4;
-  final = new THREE.Mesh(entero.geo, holograma(0x9a6cff, true));
-  final.visible = false;
-  pivote.add(pieza, alambre, gemelo, final);
+  pivote.add(pieza, alambre, gemelo);
   hacerMolde(entero.tam[0] * ESCALA + 0.24, entero.tam[1] * ESCALA + 0.24, entero.tam[2] * ESCALA + 0.24);
   const vasos = { datos: JSON.parse(new TextDecoder().decode(await bytes('modelos/vasos.json'))), bin: await bytes('modelos/vasos.bin') };
-  prepararMixta(entero.geo, alambre.geometry, vasos);
+  prepararMixta(entero.geo, alambre.geometry, vasos, datos.mallas.filter(p => p.clave !== 'torso' && p.capa > 0));
   window.__escenaLista = true;
 })();
