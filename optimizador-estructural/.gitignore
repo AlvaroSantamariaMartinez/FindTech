@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+# El dataset se regenera con: python -m toponet.nn.generate_data
+data/
+# estado de reanudación del entrenamiento (grande y temporal)
+checkpoints/*_state.pt

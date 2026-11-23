@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TopoNet Studio</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21 L12 3 L21 21 Z M7.5 14 H16.5 M12 3 V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+    <span>TopoNet Studio</span>
+    <small>optimización estructural con IA</small>
+  </div>
+  <div class="status" id="globalStatus">Listo</div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <!-- 1. Pieza -->
+    <section class="card">
+      <h2><span class="step">1</span> Pieza</h2>
+      <label class="file">
+        <input type="file" id="fileInput" accept=".stl,.obj,.ply">
+        <span>Subir STL…</span>
+      </label>
+      <div class="row">
+        <select id="exampleSelect"><option value="">— o carga un ejemplo —</option></select>
+      </div>
+      <div id="meshInfo" class="muted small"></div>
+    </section>
+
+    <!-- 2. Malla -->
+    <section class="card">
+      <h2><span class="step">2</span> Malla de cálculo</h2>
+      <label class="field">Resolución (vóxeles en el eje largo): <b id="resVal">40</b>
+        <input type="range" id="resolution" min="16" max="96" step="4" value="40">
+      </label>
+      <div class="row">
+        <button id="voxelBtn" class="secondary">Ver vóxeles</button>
+        <span id="voxelInfo" class="muted small"></span>
+      </div>
+    </section>
+
+    <!-- 3. Material -->
+    <section class="card">
+      <h2><span class="step">3</span> Material</h2>
+      <select id="materialSelect"></select>
+      <div class="grid2">
+        <label class="field small">E [MPa]<input type="number" id="matE" step="100"></label>
+        <label class="field small">ν<input type="number" id="matNu" step="0.01" min="0" max="0.49"></label>
+        <label class="field small">σ fluencia [MPa]<input type="number" id="matY" step="1"></label>
+        <label class="field small">ρ [g/cm³]<input type="number" id="matRho" step="0.01"></label>
+      </div>
+    </section>
+
+    <!-- 4. Apoyos y cargas -->
+    <section class="card">
+      <h2><span class="step">4</span> Apoyos y cargas</h2>
+      <p class="muted small">Pulsa un botón y haz clic sobre la pieza en el visor «Original».</p>
+      <div class="row">
+        <button id="pickFixed" class="pick fixed">＋ Apoyo</button>
+        <button id="pickLoad" class="pick load">＋ Carga</button>
+      </div>
+      <div class="row small">
+        <select id="faceSelect">
+          <option value="xmin">cara x-mín</option><option value="xmax">cara x-máx</option>
+          <option value="ymin">cara y-mín</option><option value="ymax">cara y-máx</option>
+          <option value="zmin">cara z-mín</option><option value="zmax">cara z-máx</option>
+        </select>
+        <button id="faceFixed" class="secondary">Empotrar cara</button>
+        <button id="faceLoad" class="secondary">Cargar cara</button>
+      </div>
+      <div id="regionList"></div>
+    </section>
+
+    <!-- 5. Objetivo -->
+    <section class="card">
+      <h2><span class="step">5</span> Objetivo</h2>
+      <label class="field">Material a conservar: <b id="vfVal">30 %</b>
+        <input type="range" id="volfrac" min="5" max="80" step="1" value="30">
+      </label>
+      <label class="field">Factor de seguridad mínimo: <b id="sfVal">1.5</b>
+        <input type="range" id="safety" min="1" max="4" step="0.1" value="1.5">
+      </label>
+    </section>
+
+    <!-- 6. Modelos -->
+    <section class="card">
+      <h2><span class="step">6</span> Modelos <button id="reloadModels" class="link" title="Volver a buscar plugins y checkpoints">recargar</button></h2>
+      <div id="modelList"></div>
+    </section>
+
+    <button id="runBtn" class="primary big">Optimizar</button>
+  </aside>
+
+  <main class="main">
+    <div class="viewbar">
+      <label>Color
+        <select id="colorMode">
+          <option value="solid">Material</option>
+          <option value="von_mises">Tensión de von Mises</option>
+          <option value="displacement">Desplazamiento</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="ghostToggle" checked> Silueta original</label>
+      <label class="check"><input type="checkbox" id="markersToggle" checked> Apoyos/cargas</label>
+      <div class="legend" id="legend" hidden>
+        <span id="legendMin">0</span><div class="bar"></div><span id="legendMax">1</span>
+      </div>
+    </div>
+    <div id="viewports" class="viewports"></div>
+    <section class="card comparison">
+      <h2>Comparación <small class="muted">(todos los diseños se validan con el mismo FEM sobre la versión binarizada)</small></h2>
+      <div id="comparison" class="table-wrap"><p class="muted">Lanza una optimización para ver la comparación.</p></div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>
