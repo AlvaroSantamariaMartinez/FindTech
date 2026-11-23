@@ -16,7 +16,29 @@ impresión óptimos (diseño inverso).
 
 Solo necesita **Python ≥ 3.10 y NumPy** (la red neuronal está escrita en NumPy).
 
-## Uso rápido
+
+## 🖥️ Aplicación descargable: `BioImpresora.html`
+
+Un único archivo HTML (≈750 KB, funciona **sin conexión** con doble clic en Chrome/Edge/Firefox):
+
+- **Paneles editables**: máquina (4 brazos), biotintas A/B + primer fotoiniciador,
+  **hidrogel de soporte** donde se imprime (esfuerzo umbral, autorreparación, densidad,
+  temperatura, atenuación UV, nivel, oxígeno), proceso y pesos del puntaje.
+- **Carga de STL** (binario/ASCII, arrastrar y soltar): escalado, eje vertical, voxelizado por
+  trazado de rayos y asignación de materiales (carcasa A + núcleo B, todo A/B o 2ª STL para B).
+- **Vista 3D animada** de la impresión: brazos moviéndose, cono UV, filamentos sin curar →
+  curados, corte transversal, colores por conversión, dosis o viabilidad.
+- **IA por puntajes**: ensamble de redes neuronales profundas + optimización bayesiana (UCB)
+  que propone, simula, puntúa y aprende episodio a episodio; gráfica de aprendizaje, error de
+  predicción, ranking de las mejores configuraciones e importancia de cada parámetro.
+- Exporta **G-code**, configuración JSON y CSV de episodios.
+
+Código fuente en `web/` (`core.js` física + red neuronal, `app.js` interfaz, `worker.js`).
+Reconstruir: `python web/construir.py` (descarga Three.js r158) o `--three ruta/three.min.js`.
+
+## Paquete Python (prototipo de línea de comandos)
+
+### Uso rápido
 
 ```bash
 cd bioimpresora

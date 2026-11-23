@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BioImpresora · Simulador + IA</title>
+<style>
+/*__CSS__*/
+</style>
+</head>
+<body>
+<header class="barra">
+  <div class="marca"><span class="logo">⬢</span> BioImpresora <small>simulador de órganos biomiméticos + IA</small></div>
+  <div class="acciones">
+    <button id="btn-simular" class="prim" title="Volver a simular con los parámetros actuales">⟳ Simular</button>
+    <button id="btn-gcode" title="Descargar el G-code de la impresión actual">⬇ G-code</button>
+    <button id="btn-guardar" title="Guardar toda la configuración en un archivo JSON">💾 Guardar</button>
+    <label class="boton" title="Cargar una configuración JSON">📂 Cargar<input id="in-config" type="file" accept=".json" hidden></label>
+    <button id="btn-ayuda">? Ayuda</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="lateral">
+    <nav class="pestanas" id="pestanas"></nav>
+    <div class="paneles" id="paneles"></div>
+  </aside>
+
+  <section class="visor">
+    <div id="lienzo3d" class="lienzo3d"></div>
+    <div id="arrastrar" class="arrastrar" hidden>Suelta aquí tu archivo STL</div>
+
+    <div class="tarjeta puntaje" id="tarjeta-puntaje">
+      <div class="pt-cab"><span>PUNTAJE</span><span id="pt-estado" class="estado">—</span></div>
+      <div class="pt-total"><span id="pt-total">—</span><small>/100</small></div>
+      <div id="pt-barras"></div>
+      <div id="pt-pen" class="pen"></div>
+      <table id="pt-metricas" class="metricas"></table>
+    </div>
+
+    <div class="tarjeta leyenda" id="leyenda"></div>
+
+    <div class="tarjeta ia-mini" id="ia-mini">
+      <div class="pt-cab"><span>APRENDIZAJE DE LA RED</span><span id="ia-estado-mini" class="estado">inactivo</span></div>
+      <canvas id="graf-ia" width="420" height="190"></canvas>
+      <div class="ia-linea"><span id="ia-resumen">Pulsa «Iniciar aprendizaje» en la pestaña IA.</span></div>
+    </div>
+
+    <div class="controles">
+      <button id="btn-reiniciar" title="Reproducir desde el principio">⏮</button>
+      <button id="btn-play" title="Reproducir / pausar">▶</button>
+      <input id="tiempo" type="range" min="0" max="1000" value="1000">
+      <span id="t-texto" class="mono">0:00 / 0:00</span>
+      <span id="capa-texto" class="mono">capa –</span>
+      <label>vel.<select id="velocidad">
+        <option value="1">1×</option><option value="5">5×</option><option value="20">20×</option>
+        <option value="60" selected>60×</option><option value="200">200×</option><option value="1000">1000×</option>
+      </select></label>
+      <label>color<select id="modo-color">
+        <option value="material">material / curado</option><option value="conversion">conversión α</option>
+        <option value="viabilidad">viabilidad celular</option><option value="dosis">dosis UV</option>
+      </select></label>
+      <label title="Mostrar sólo hasta esta capa">capas<input id="corte-capa" type="range" min="0" max="100" value="100"></label>
+      <label title="Corte transversal en X">corte X<input id="corte-x" type="range" min="0" max="100" value="100"></label>
+      <label class="chk"><input id="ver-bano" type="checkbox" checked>baño</label>
+      <label class="chk"><input id="ver-brazos" type="checkbox" checked>brazos</label>
+      <label class="chk"><input id="ver-fantasma" type="checkbox" checked>STL</label>
+    </div>
+    <div id="cargando" class="cargando" hidden>simulando…</div>
+  </section>
+</main>
+
+<div id="modal-ayuda" class="modal" hidden>
+  <div class="modal-caja">
+    <button class="cerrar" id="cerrar-ayuda">✕</button>
+    <h2>Cómo funciona</h2>
+    <p><b>La máquina</b> tiene 4 brazos: <b>E1</b> extruye el biopolímero estructural (material A), <b>E2</b> la biotinta con células (material B), <b>UV</b> fotopolimeriza el primer (fotoiniciador) mezclado en ambos, y <b>AUX</b> está sin uso y permanece estacionado.</p>
+    <p><b>Se imprime dentro de un hidrogel de soporte</b> (baño): su esfuerzo umbral sostiene los filamentos aún líquidos, pero arrastra la boquilla, tarda en «cicatrizar» las grietas que deja, absorbe parte del UV y su temperatura afecta a gelificación y células.</p>
+    <h3>Modelo físico</h3>
+    <ul>
+      <li><b>Flujo</b> Herschel-Bulkley τ = τ0 + K·γ̇ⁿ → caudal por presión → relación de extrusión (huecos si &lt;1, ensanchamiento si &gt;1).</li>
+      <li><b>Curado</b> dα/dt = k·√(I − I_inh)·(1 − α); k ∝ √[fotoiniciador]·eficiencia del primer a la longitud de onda; atenuación Beer-Lambert por el baño y las capas superiores.</li>
+      <li><b>Deformación</b>: mientras α &lt; α_gel el filamento se extiende; el baño lo sostiene; capas sin gelificar colapsan.</li>
+      <li><b>Viabilidad</b> = supervivencia a la cizalla en la boquilla × exp(−dosis·daño(λ)/D_letal) × factor de temperatura.</li>
+    </ul>
+    <h3>Sistema de puntaje (0–100)</h3>
+    <p>Media ponderada de: fidelidad de forma (IoU 3D), viabilidad, fracción curada, rapidez (e^(−t/t_ref)), seguridad frente a obstrucción de boquilla y eficiencia de material. Penalizaciones: viabilidad bajo el mínimo y colisiones entre brazos. Los pesos se editan en la pestaña <b>Puntaje</b>.</p>
+    <h3>Aprendizaje profundo</h3>
+    <p>Cada <b>episodio</b> la IA propone una forma de imprimir, la simula y recibe su puntaje. Un <b>ensamble de redes neuronales profundas</b> aprende a predecir el puntaje a partir de los parámetros; la media del ensamble es la predicción y su desacuerdo la incertidumbre. La siguiente propuesta maximiza <i>predicción + κ·incertidumbre</i> (equilibrio exploración/explotación) y se afina con el gradiente de la red. Con los episodios el error de predicción baja y el puntaje máximo sube.</p>
+    <h3>STL</h3>
+    <p>Arrastra un STL al visor o usa la pestaña <b>Modelo</b>. Se escala al tamaño indicado, se voxeliza por trazado de rayos y se asigna material: carcasa A + núcleo celular B, todo A, todo B, o una segunda STL que marca la región B.</p>
+    <p class="nota">Los coeficientes por defecto son verosímiles pero deben calibrarse con ensayos reales.</p>
+  </div>
+</div>
+
+<script>
+/*__THREE__*/
+</script>
+<script id="core-src">
+/*__CORE__*/
+</script>
+<script id="worker-src" type="text/plain">
+/*__WORKER__*/
+</script>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
