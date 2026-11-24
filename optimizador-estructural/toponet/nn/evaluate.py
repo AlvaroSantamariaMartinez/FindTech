@@ -35,6 +35,7 @@ def main(argv=None):
     ap.add_argument("--refine", type=int, default=10, help="iteraciones SIMP del modo híbrido (0 = no)")
     ap.add_argument("--val-fraction", type=float, default=0.1)
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--tta", action="store_true", help="test-time augmentation (espejos)")
     ap.add_argument("--out", default=None, help="JSON con los resultados")
     a = ap.parse_args(argv)
 
@@ -49,7 +50,7 @@ def main(argv=None):
         target = s["target"].astype(float)
         ev_t = evaluate(p, target)
         t0 = time.time()
-        pred = predict_density(model, p)
+        pred = predict_density(model, p, tta=a.tta)
         t_nn = time.time() - t0
         ev_p = evaluate(p, pred)
         row = {

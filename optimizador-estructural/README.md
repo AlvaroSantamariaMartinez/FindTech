@@ -32,7 +32,7 @@ teoría y su implementación:
 cd optimizador-estructural
 pip install -r requirements.txt          # PyTorch CPU: ver comentario en requirements.txt
 python examples/generate_examples.py     # (re)genera los STL de ejemplo
-python -m pytest -q                      # 15 tests: FEM, SIMP, geometría, validación, API
+python -m pytest -q                      # 14 tests: FEM, SIMP, geometría, validación, API
 ```
 
 ## Usar la aplicación

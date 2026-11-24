@@ -153,7 +153,10 @@ function fitCamera(geom) {
   const d = s.length();
   sharedTarget.copy(c);
   // distancia para que la esfera envolvente quepa en el campo de visión (con margen)
-  const dist = (d / 2) / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 0.9;
+  // usa el menor de los semiángulos vertical/horizontal (paneles casi cuadrados, aspecto ≥ 0.9)
+  const halfV = THREE.MathUtils.degToRad(camera.fov / 2);
+  const halfH = Math.atan(0.9 * Math.tan(halfV));
+  const dist = (d / 2) / Math.sin(Math.min(halfV, halfH)) * 1.05;
   camera.position.copy(c).add(new THREE.Vector3(0.9, -1.3, 0.8).normalize().multiplyScalar(dist));
   camera.near = d / 1000; camera.far = d * 100; camera.updateProjectionMatrix();
   camera.lookAt(c);

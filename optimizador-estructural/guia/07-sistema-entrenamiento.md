@@ -289,6 +289,21 @@ desplegable de la WebUI (pulsa "recargar").
 **Tiempos orientativos** (640 muestras de 32×16×16): CPU de 4 núcleos ≈ 15–25 s por
 época; GPU modesta ≈ 1–2 s por época.
 
+### Resultados de referencia (modelo incluido)
+
+Con exactamente estos comandos (640 muestras, 80 épocas, CPU de 4 núcleos, ~40 min
+de datos + ~10 min de entrenamiento) se obtuvo `checkpoints/toponet_unet.pt`:
+
+| Modo | Gap de flexibilidad vs SIMP (mediana) | Camino de carga intacto | Tiempo |
+|------|----------------------------------------|-------------------------|--------|
+| Solo red | +31.8 % | 90.6 % | 0.44 s |
+| Híbrido (red + 10 it. SIMP) | +3.0 % | 98.4 % | 3.1 s |
+
+Observa la diferencia entre la métrica geométrica (IoU 0.70, "parece aceptable") y
+la física (1 de cada 10 diseños con una barra rota): justo lo que advertía el apartado
+7.6. La ficha completa está en [`checkpoints/README.md`](../checkpoints/README.md).
+Es tu línea base: usa el apartado 7.8 para superarla.
+
 ## 7.10 Escalar el sistema
 
 * **GPU:** `--device cuda` (automático si está disponible). Con GPU puedes subir a
