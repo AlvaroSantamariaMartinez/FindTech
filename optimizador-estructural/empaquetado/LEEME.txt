@@ -1,0 +1,35 @@
+TopoNet Studio — optimización estructural con IA
+=================================================
+
+CÓMO USARLO
+  Windows:  doble clic en TopoNetStudio.exe
+  Linux:    ./TopoNetStudio            (en Linux, gmsh necesita: sudo apt install libglu1-mesa)
+  macOS:    ./TopoNetStudio            (la primera vez: clic derecho > Abrir, o
+                                        xattr -dr com.apple.quarantine <esta carpeta>)
+
+  Se abre una ventana de consola y el navegador en http://localhost:8000
+  Para cerrar el programa, cierra la consola (o Ctrl+C).
+
+COMANDOS (desde una terminal en esta carpeta)
+  TopoNetStudio                         abre la aplicación
+  TopoNetStudio servir --port 8080      otro puerto / --no-navegador / --host 0.0.0.0
+  TopoNetStudio autoprueba              comprueba que la física y la red funcionan
+  TopoNetStudio generar-datos --n 800 --workers 4
+  TopoNetStudio entrenar --epochs 80 --out checkpoints/mi_red.pt
+  TopoNetStudio evaluar --ckpt checkpoints/mi_red.pt --n 40 --refine 10
+  (añade --help a cualquiera para ver todas sus opciones)
+
+TUS MODELOS
+  * Los checkpoints que guardes en la carpeta  checkpoints/  junto al ejecutable
+    aparecen en la WebUI (pulsa "recargar" en Modelos).
+  * Los plugins (.py) que pongas en  plugins/  junto al ejecutable también.
+  * El ejecutable entrena en CPU. Para entrenar con GPU usa el código fuente
+    (python -m toponet.nn.train) con PyTorch para CUDA; los .pt son compatibles.
+
+LA GUÍA
+  Carpeta _internal/guia (o la carpeta guia/ del repositorio). El capítulo 11
+  explica la física avanzada y de qué proyectos procede.
+
+AVISO
+  Herramienta de aprendizaje y diseño conceptual. No sustituye a un cálculo
+  de ingeniería profesional ni a ensayos cuando un fallo tenga consecuencias.

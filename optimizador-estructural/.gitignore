@@ -6,3 +6,5 @@ __pycache__/
 data/
 # estado de reanudación del entrenamiento (grande y temporal)
 checkpoints/*_state.pt
+build/
+dist/

@@ -28,6 +28,7 @@ cada capítulo indica qué archivo implementa lo que se explica.
 | 8 | [Integridad estructural y validación](08-integridad-y-validacion.md) | Cómo garantizar que lo que propone la red aguanta de verdad |
 | 9 | [La WebUI y el sistema de plugins](09-webui-y-plugins.md) | Usar la app, su API y cómo añadir tus propios modelos |
 | 10 | [Referencias, ejercicios y siguientes pasos](10-referencias-y-siguientes-pasos.md) | Bibliografía comentada y hoja de ruta para mejorar tu modelo |
+| 11 | [Física realista: el análisis avanzado](11-fisica-realista.md) | Geometría real, tetraedros P2, peso propio, pandeo, frecuencias, fatiga, impresión 3D; de qué proyectos sale cada pieza y cómo se ha validado |
 
 ## Ruta de aprendizaje recomendada
 
@@ -37,10 +38,18 @@ Semana 2  Cap. 4-5   SIMP y geometría.    Práctica: optimiza los STL de ejempl
 Semana 3  Cap. 6     Redes neuronales.    Práctica: lee toponet/nn/model.py y cuenta sus parámetros.
 Semana 4  Cap. 7     Entrenamiento.       Práctica: genera 800 muestras y entrena tu primer modelo.
 Semana 5  Cap. 8-9   Validación y app.    Práctica: compara tu red con SIMP y crea un plugin propio.
-Semana 6+ Cap. 10    Mejoras.             Práctica: ablaciones, más datos, pérdida física, GPU.
+Semana 6  Cap. 11    Física realista.     Práctica: analiza tu mejor diseño con pandeo, fatiga y capas.
+Semana 7+ Cap. 10    Mejoras.             Práctica: ablaciones, más datos, pérdida física, GPU.
 ```
 
 ## Puesta en marcha rápida
+
+**Con el ejecutable** (sin instalar Python): descarga el de tu sistema, descomprímelo
+y ejecuta `TopoNetStudio` (en Windows, `TopoNetStudio.exe`). Los mismos comandos de
+abajo están disponibles como `TopoNetStudio generar-datos | entrenar | evaluar |
+autoprueba` (ver `LEEME.txt`).
+
+**Desde el código:**
 
 ```bash
 cd optimizador-estructural
@@ -49,7 +58,7 @@ python examples/generate_examples.py            # STL de ejemplo
 python -m toponet.nn.generate_data --n 800      # dataset (≈ 40 min con 4 núcleos)
 python -m toponet.nn.train --epochs 60          # entrena tu red
 python -m toponet.nn.evaluate --n 30            # validación física
-python -m webui.server                           # http://localhost:8000
+python toponet_studio.py                         # http://localhost:8000
 ```
 
 > **Nota de seguridad.** Este proyecto es una herramienta de aprendizaje y de diseño

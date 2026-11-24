@@ -10,6 +10,28 @@ STL ─► vóxeles ─► apoyos y cargas ─►┬─ SIMP clásico (modelo ba
                                      └─ tus plugins (BESO, ONNX…) ───┘   (camino de carga, FS, rigidez…)
 ```
 
+## ⬇️ El ejecutable
+
+No hace falta instalar Python: descarga el programa de tu sistema de la pestaña
+**Actions** del repositorio (flujo *TopoNet Studio · ejecutables*, sección
+*Artifacts*), descomprímelo y abre `TopoNetStudio` (`TopoNetStudio.exe` en Windows).
+Incluye la WebUI, la física avanzada, el modelo preentrenado y los comandos de
+entrenamiento (`TopoNetStudio entrenar ...`). Instrucciones en
+[`empaquetado/LEEME.txt`](empaquetado/LEEME.txt).
+
+Para compilarlo tú: `pip install -r requirements.txt pyinstaller` y
+`pyinstaller empaquetado/toponet_studio.spec`.
+
+## 🔬 Física realista
+
+Además de la validación rápida por vóxeles, cada diseño (y la pieza original) puede
+pasar un **análisis avanzado** sobre su geometría real: tetraedros cuadráticos
+(scikit-fem + fTetWild), peso propio, **pandeo** (Bleyer, *Numerical Tours*),
+**frecuencias naturales**, **fatiga** (fatpack: Basquin + Goodman) y **anisotropía de
+impresión 3D** con criterio de delaminación. Toda la física procede de proyectos
+establecidos y está validada contra soluciones analíticas (`tests/test_physics.py`).
+Ver el [capítulo 11](guia/11-fisica-realista.md).
+
 ## 📘 La guía
 
 La carpeta [`guia/`](guia/README.md) es un curso completo en español con toda la
@@ -25,6 +47,7 @@ teoría y su implementación:
 8. [Integridad estructural y validación](guia/08-integridad-y-validacion.md)
 9. [La WebUI y el sistema de plugins](guia/09-webui-y-plugins.md)
 10. [Referencias, ejercicios y siguientes pasos](guia/10-referencias-y-siguientes-pasos.md)
+11. [Física realista: el análisis avanzado](guia/11-fisica-realista.md)
 
 ## Instalación
 
@@ -32,13 +55,13 @@ teoría y su implementación:
 cd optimizador-estructural
 pip install -r requirements.txt          # PyTorch CPU: ver comentario en requirements.txt
 python examples/generate_examples.py     # (re)genera los STL de ejemplo
-python -m pytest -q                      # 14 tests: FEM, SIMP, geometría, validación, API
+python -m pytest -q                      # 23 tests: FEM, SIMP, geometría, física avanzada, red, API
 ```
 
 ## Usar la aplicación
 
 ```bash
-python -m webui.server        # → http://127.0.0.1:8000
+python toponet_studio.py      # → http://127.0.0.1:8000  (o: python -m webui.server)
 ```
 
 1. Sube un STL (o elige un ejemplo: ya trae apoyos y cargas).
@@ -74,7 +97,8 @@ toponet/            biblioteca
   fem.py            elementos finitos H8 + multigrid algebraico
   simp.py           optimización topológica SIMP (modelo base)
   geometry.py       STL ↔ vóxeles, marching cubes
-  analysis.py       validación: camino de carga, islas, FS, rigidez, espesor
+  analysis.py       validación rápida: camino de carga, islas, FS, rigidez, espesor
+  physics/          física avanzada: tetraedros P2, pandeo, modos, fatiga, impresión 3D
   nn/               red neuronal: features, model, dataset, losses, train, evaluate, infer
   plugins/          sistema de plugins + SIMP + TopoNet
 plugins/            plugins de usuario (ejemplo: BESO)
@@ -82,7 +106,9 @@ webui/              servidor FastAPI + cliente three.js
 examples/           STL de ejemplo
 checkpoints/        pesos entrenados
 guia/               la guía
-tests/              tests
+tests/              tests (incluida la validación física contra soluciones analíticas)
+toponet_studio.py   punto de entrada (app + comandos de entrenamiento)
+empaquetado/        receta de PyInstaller y LEEME del ejecutable
 ```
 
 > ⚠️ Herramienta educativa y de diseño conceptual. Modelo elástico lineal, estático e

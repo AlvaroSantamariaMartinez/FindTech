@@ -144,8 +144,9 @@ def load_plugins(extra_dirs: Optional[List[str]] = None, force: bool = False) ->
         _REGISTRY.clear()
         _LOAD_ERRORS.clear()
     # 1) plugins incluidos
-    for mod in pkgutil.iter_modules(__path__):
-        name = f"{__name__}.{mod.name}"
+    names = {m.name for m in pkgutil.iter_modules(__path__)} | {"simp_baseline", "neural_unet"}
+    for modname in sorted(names):
+        name = f"{__name__}.{modname}"
         try:
             if force and name in sys.modules:
                 importlib.reload(sys.modules[name])
@@ -158,7 +159,9 @@ def load_plugins(extra_dirs: Optional[List[str]] = None, force: bool = False) ->
     env = os.environ.get("TOPONET_PLUGINS")
     if env:
         dirs += env.split(os.pathsep)
-    dirs.append(os.path.join(_project_root(), "plugins"))
+    from ..paths import search_dirs
+
+    dirs += search_dirs("plugins")  # junto al ejecutable y los incluidos
     for d in dirs:
         if not os.path.isdir(d):
             continue

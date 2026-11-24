@@ -1,0 +1,87 @@
+name: TopoNet Studio · ejecutables
+
+# Compila el ejecutable de TopoNet Studio para Windows, Linux y macOS (Apple Silicon).
+# Se lanza al subir cambios de optimizador-estructural/ o a mano desde la pestaña Actions.
+# Los ejecutables quedan como artefactos descargables de cada ejecución.
+on:
+  push:
+    paths:
+      - "optimizador-estructural/**"
+      - ".github/workflows/toponet-ejecutables.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: toponet-ejecutables-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows x64
+            artifact: TopoNetStudio-windows-x64
+            torch_index: https://download.pytorch.org/whl/cpu
+          - os: ubuntu-22.04
+            label: Linux x64
+            artifact: TopoNetStudio-linux-x64
+            torch_index: https://download.pytorch.org/whl/cpu
+          - os: macos-14
+            label: macOS Apple Silicon
+            artifact: TopoNetStudio-macos-arm64
+            torch_index: ""
+    defaults:
+      run:
+        working-directory: optimizador-estructural
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Librerías del sistema para gmsh (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q libglu1-mesa libxcursor1 libxft2 libxinerama1 libgl1
+
+      - name: Dependencias
+        run: |
+          python -m pip install --upgrade pip
+          if [ -n "${{ matrix.torch_index }}" ]; then
+            pip install torch --index-url "${{ matrix.torch_index }}"
+          else
+            pip install torch
+          fi
+          pip install -r requirements.txt pyinstaller
+
+      - name: Tests (física validada frente a soluciones analíticas)
+        run: python -m pytest -q -x -W ignore::DeprecationWarning tests
+
+      - name: Empaquetar con PyInstaller
+        run: pyinstaller empaquetado/toponet_studio.spec --noconfirm
+
+      - name: Autoprueba del ejecutable
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            ./dist/TopoNetStudio/TopoNetStudio.exe autoprueba
+          else
+            ./dist/TopoNetStudio/TopoNetStudio autoprueba
+          fi
+
+      - name: Añadir instrucciones
+        run: cp empaquetado/LEEME.txt dist/TopoNetStudio/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: optimizador-estructural/dist/TopoNetStudio
+          retention-days: 30
+          compression-level: 6

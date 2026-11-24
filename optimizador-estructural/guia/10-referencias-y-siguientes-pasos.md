@@ -147,6 +147,28 @@ Nivel 3 ─ representaciones sin vóxeles (GNN sobre tetraedros, campos implíci
 * **Li, Z. et al. (2021).** Fourier neural operator for parametric partial differential
   equations. *ICLR*.
 
+### Física realista (capítulo 11)
+
+* **Gustafsson, T. & McBain, G.D. (2020).** scikit-fem: A Python package for finite
+  element assembly. *Journal of Open Source Software*, 5(52), 2369.
+* **Hu, Y., Schneider, T., Wang, B., Zorin, D. & Panozzo, D. (2020).** Fast tetrahedral
+  meshing in the wild. *ACM Transactions on Graphics*, 39(4). — fTetWild.
+* **Geuzaine, C. & Remacle, J.-F. (2009).** Gmsh: a 3-D finite element mesh generator
+  with built-in pre- and post-processing facilities. *IJNME*, 79, 1309–1331.
+* **Bleyer, J. (2018–2024).** *Numerical Tours of Computational Mechanics with FEniCS*.
+  Zenodo / comet-fenicsx. — Pandeo lineal 3D y elasticidad ortótropa.
+* **Knyazev, A.V. (2001).** Toward the optimal preconditioned eigensolver: Locally
+  Optimal Block Preconditioned Conjugate Gradient method. *SIAM J. Sci. Comput.*, 23(2),
+  517–541. — LOBPCG.
+* **Timoshenko, S.P. & Gere, J.M. (1961).** *Theory of Elastic Stability.* McGraw-Hill.
+  — Pandeo de columnas y pandeo lateral-torsional.
+* **Basquin, O.H. (1910).** The exponential law of endurance tests. *Proc. ASTM*, 10;
+  **Goodman, J. (1899).** *Mechanics Applied to Engineering.* — Fatiga.
+* **Brewer, J.C. & Lagace, P.A. (1988).** Quadratic stress criterion for initiation of
+  delamination. *Journal of Composite Materials*, 22, 1141–1155.
+* **Ahn, S.-H., Montero, M., Odell, D., Roundy, S. & Wright, P.K. (2002).** Anisotropic
+  material properties of fused deposition modeling ABS. *Rapid Prototyping Journal*, 8(4).
+
 ### Geometría
 
 * **Lorensen, W.E. & Cline, H.E. (1987).** Marching cubes: A high resolution 3D surface

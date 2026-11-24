@@ -37,8 +37,10 @@ from pydantic import BaseModel, Field  # noqa: E402
 
 from toponet.analysis import evaluate  # noqa: E402
 from toponet.geometry import (density_to_mesh, load_mesh, sample_field_at_points,  # noqa: E402
-                              voxelize)
+                              solid_to_mesh, voxelize)
 from toponet.plugins import get_plugin, list_plugins, load_errors, load_plugins  # noqa: E402
+from toponet.physics.advanced import AdvancedSettings  # noqa: E402
+from toponet.physics.advanced import analyze as analyze_advanced  # noqa: E402
 from toponet.problem import MATERIALS, Material, Problem, Region, apply_regions  # noqa: E402
 
 STATIC = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
@@ -153,6 +155,16 @@ class MaterialIn(BaseModel):
     nu: float = 0.35
     yield_strength: float = 50.0
     density: float = 1.24
+    # propiedades para la física avanzada (si faltan, se toman del material predefinido)
+    ultimate_strength: Optional[float] = None
+    fatigue_strength: Optional[float] = None
+    fatigue_cycles_ref: Optional[float] = None
+    fatigue_exponent: Optional[float] = None
+    layer_E_ratio: Optional[float] = None
+    interlayer_strength_ratio: Optional[float] = None
+
+    def to_material(self) -> Material:
+        return Material.from_dict({k: v for k, v in self.model_dump().items() if v is not None})
 
 
 class ModelRun(BaseModel):
@@ -264,8 +276,7 @@ def _build_problem(job: JobIn) -> Problem:
     dom, origin, pitch = _voxels(job.mesh_id, job.resolution)
     if dom.sum() > MAX_ELEMENTS:
         raise ValueError(f"Demasiados elementos ({dom.sum()}); baja la resolución (máx. {MAX_ELEMENTS}).")
-    m = job.material
-    mat = Material(m.name, m.E, m.nu, m.yield_strength, m.density)
+    mat = job.material.to_material()
     n = tuple(s + 1 for s in dom.shape)
     p = Problem(dom, np.zeros(n + (3,), bool), np.zeros(n + (3,)), material=mat,
                 volfrac=float(np.clip(job.volfrac, 0.02, 1.0)), pitch=pitch, origin=origin,
@@ -297,13 +308,15 @@ def _make_result_mesh(rid: str, threshold: float) -> dict:
     else:
         ev = evaluate(p, r["density"], threshold=key, reference_compliance=r.get("ref_c"),
                       target_safety_factor=r.get("safety_target", 1.5))
-    dens = _display_density(p, r["density"], ev)
-    mesh = density_to_mesh(dens, p.origin, p.pitch, threshold=key, smooth_iters=8)
+    # La malla (y el STL descargable) es EXACTAMENTE el diseño validado: vóxeles sólidos ya
+    # sin islas, suavizados y con su mismo volumen (ver geometry.solid_to_mesh).
+    mesh = solid_to_mesh(ev.solid, p.origin, p.pitch)
     scal = {}
     if mesh is not None and len(mesh.vertices):
         scal["von_mises"] = sample_field_at_points(ev.von_mises, p.origin, p.pitch, mesh.vertices)
         scal["displacement"] = sample_field_at_points(ev.displacement, p.origin, p.pitch, mesh.vertices)
         r.setdefault("stl_cache", {})[key] = mesh.export(file_type="stl")
+        r.setdefault("tri_cache", {})[key] = mesh
     payload = {"threshold": key, "mesh": _mesh_payload(mesh, scal), "metrics": _clean(ev.metrics),
                "checks": _clean(ev.checks)}
     cache[key] = payload
@@ -337,7 +350,8 @@ def _run_model(job_id: str, run_key: str, problem: Problem, model: ModelRun, ref
         ev.metrics["optimize_time_s"] = t_opt
         rid = uuid.uuid4().hex[:12]
         RESULTS[rid] = {"problem": problem, "density": dens, "evaluation": ev, "ref_c": ref_c,
-                        "safety_target": safety, "name": run["name"], "mesh_name": problem.name}
+                        "safety_target": safety, "name": run["name"], "mesh_name": problem.name,
+                        "job_id": job_id, "original": False}
         _make_result_mesh(rid, 0.5)
         run.update(status="done", progress=1.0, message=f"Listo en {t_opt:.1f} s", result_id=rid,
                    metrics=_clean(ev.metrics), checks=_clean(ev.checks))
@@ -347,6 +361,8 @@ def _run_model(job_id: str, run_key: str, problem: Problem, model: ModelRun, ref
 
 def _run_job(job_id: str, body: JobIn):
     job = JOBS[job_id]
+    job["regions"] = [Region.from_dict(r.model_dump()) for r in body.regions]
+    job["material"] = body.material.to_material()
     try:
         job["message"] = "Voxelizando y aplicando condiciones de contorno…"
         problem = _build_problem(body)
@@ -356,7 +372,8 @@ def _run_job(job_id: str, body: JobIn):
         ref_c = ref.metrics["compliance_Nmm"]
         rid = uuid.uuid4().hex[:12]
         RESULTS[rid] = {"problem": problem, "density": np.ones(problem.shape), "evaluation": ref, "ref_c": ref_c,
-                        "safety_target": body.safety_target, "name": "Original", "mesh_name": problem.name}
+                        "safety_target": body.safety_target, "name": "Original", "mesh_name": problem.name,
+                        "job_id": job_id, "original": True}
         job["reference"] = {"result_id": rid, "metrics": _clean(ref.metrics), "checks": _clean(ref.checks)}
         # campo de tensiones de la pieza original sobre SU malla (para colorear el STL)
         om = MESHES[body.mesh_id]["mesh"]
@@ -407,7 +424,8 @@ def api_job(job_id: str):
     if job_id not in JOBS:
         raise HTTPException(404, "trabajo no encontrado")
     j = JOBS[job_id]
-    return JSONResponse(_clean({k: v for k, v in j.items() if k != "error"} | {"error": j.get("error")}))
+    hidden = ("error", "regions", "material")  # objetos internos, no JSON
+    return JSONResponse(_clean({k: v for k, v in j.items() if k not in hidden} | {"error": j.get("error")}))
 
 
 @app.get("/api/results/{rid}/mesh")
@@ -447,6 +465,99 @@ def api_result_density(rid: str):
     np.savez_compressed(buf, density=r["density"].astype(np.float32), domain=p.domain, origin=p.origin, pitch=p.pitch)
     return Response(buf.getvalue(), media_type="application/octet-stream",
                     headers={"Content-Disposition": 'attachment; filename="densidad.npz"'})
+
+
+# ---------------------------------------------------------------------------
+# Análisis avanzado (física realista sobre la geometría real)
+# ---------------------------------------------------------------------------
+
+ADVANCED: Dict[str, dict] = {}
+ADV_EXECUTOR = ThreadPoolExecutor(max_workers=1)  # mallado y autovalores: uno detrás de otro
+
+
+class AdvancedIn(BaseModel):
+    settings: Dict[str, Any] = Field(default_factory=dict)
+    threshold: float = 0.5
+    material: Optional[MaterialIn] = None  # si falta, el material con el que se optimizó
+
+
+@app.get("/api/physics/info")
+def api_physics_info():
+    from toponet.physics.tetmesh import available_meshers
+
+    return {"meshers": available_meshers(),
+            "settings": vars(AdvancedSettings()),
+            "sources": PHYSICS_SOURCES}
+
+
+PHYSICS_SOURCES = [
+    {"what": "Elasticidad lineal 3D (tetraedros cuadráticos P2)", "source": "scikit-fem", "url": "https://github.com/kinnala/scikit-fem"},
+    {"what": "Malla de tetraedros de la geometría real", "source": "fTetWild / pytetwild (respaldo: gmsh)", "url": "https://github.com/pyvista/pytetwild"},
+    {"what": "Pandeo lineal (rigidez geométrica)", "source": "J. Bleyer, Numerical Tours (comet-fenicsx)", "url": "https://github.com/bleyerj/comet-fenicsx"},
+    {"what": "Frecuencias naturales", "source": "scikit-fem, ejemplo ex03", "url": "https://github.com/kinnala/scikit-fem"},
+    {"what": "Fatiga: curva S-N de Basquin + Goodman", "source": "fatpack", "url": "https://github.com/Gunnstein/fatpack"},
+    {"what": "Anisotropía de impresión 3D", "source": "Bleyer, tour de elasticidad ortótropa (extendido a 3D)", "url": "https://github.com/bleyerj/comet-fenicsx"},
+]
+
+
+def _run_advanced(aid: str, rid: str, settings: AdvancedSettings, threshold: float, material=None):
+    a = ADVANCED[aid]
+    r = RESULTS[rid]
+    job = JOBS[r["job_id"]]
+    p: Problem = r["problem"]
+
+    def progress(frac, msg):
+        a["progress"], a["message"] = float(frac), msg
+
+    try:
+        a["status"] = "running"
+        om = MESHES[job["mesh_id"]]["mesh"]
+        if r.get("original"):
+            tri = om
+        else:
+            _make_result_mesh(rid, threshold)
+            tri = r.get("tri_cache", {}).get(round(threshold, 3))
+            if tri is None:
+                raise ValueError("el diseño está vacío con este umbral")
+        res = analyze_advanced(tri, job["regions"], material or job["material"], settings, progress, bbox=om.bounds)
+        payload = _mesh_payload_from_arrays(res.surface_vertices, res.surface_faces, res.surface_fields)
+        a.update(status="done", progress=1.0, message=f"Listo en {res.metrics['analysis_time_s']:.0f} s",
+                 metrics=_clean(res.metrics), checks=_clean(res.checks), mesh=payload)
+    except Exception as e:
+        a.update(status="error", message=str(e), error=traceback.format_exc(limit=4))
+
+
+def _mesh_payload_from_arrays(verts, faces, fields):
+    import trimesh
+
+    return _mesh_payload(trimesh.Trimesh(verts, faces, process=False), fields)
+
+
+@app.post("/api/results/{rid}/advanced")
+def api_advanced(rid: str, body: AdvancedIn):
+    if rid not in RESULTS:
+        raise HTTPException(404, "resultado no encontrado")
+    if "regions" not in JOBS.get(RESULTS[rid]["job_id"], {}):
+        raise HTTPException(400, "el trabajo de este resultado ya no está disponible")
+    settings = AdvancedSettings.from_dict(body.settings)
+    aid = uuid.uuid4().hex[:12]
+    ADVANCED[aid] = {"id": aid, "result_id": rid, "status": "queued", "progress": 0.0, "message": "en cola"}
+    mat = body.material.to_material() if body.material else None
+    ADV_EXECUTOR.submit(_run_advanced, aid, rid, settings, float(np.clip(body.threshold, 0.05, 0.95)), mat)
+    return {"advanced_id": aid}
+
+
+@app.get("/api/advanced/{aid}")
+def api_advanced_status(aid: str):
+    if aid not in ADVANCED:
+        raise HTTPException(404, "análisis no encontrado")
+    a = ADVANCED[aid]
+    out = {k: v for k, v in a.items() if k not in ("mesh", "error")}
+    if a["status"] == "done":
+        out["mesh"] = a["mesh"]
+    if a["status"] == "error":
+        out["error"] = a.get("error")
+    return JSONResponse(_clean(out))
 
 
 @app.get("/")

@@ -4,7 +4,10 @@ Este módulo es el "juez" físico de todo el proyecto: lo usan el optimizador SI
 la generación del dataset, el cálculo de rasgos físicos para la red neuronal y
 la validación final de cualquier diseño (venga del modelo que venga).
 
-Ver `guia/02-elementos-finitos.md` para la teoría.
+Las matrices de elemento proceden de scikit-fem (https://github.com/kinnala/scikit-fem);
+este módulo solo añade un ensamblaje cacheado y solvers rápidos para la rejilla de vóxeles.
+
+Ver `guia/03-elementos-finitos.md` para la teoría.
 """
 from __future__ import annotations
 
@@ -44,13 +47,16 @@ DIRECT_SOLVER_LIMIT = 3000  # nº de GDL libres por debajo del cual usamos solve
 
 
 def constitutive_matrix(E: float = 1.0, nu: float = 0.3) -> np.ndarray:
-    """Matriz D (6x6) de elasticidad lineal isótropa (notación de Voigt)."""
-    c = E / ((1 + nu) * (1 - 2 * nu))
+    """Matriz D (6x6) de elasticidad lineal isótropa (notación de Voigt, cortantes de
+    ingeniería), construida a partir de los parámetros de Lamé de scikit-fem."""
+    from skfem.models.elasticity import lame_parameters
+
+    lam, mu = lame_parameters(E, nu)
     D = np.zeros((6, 6))
-    D[:3, :3] = nu
-    np.fill_diagonal(D[:3, :3], 1 - nu)
-    D[3, 3] = D[4, 4] = D[5, 5] = (1 - 2 * nu) / 2
-    return c * D
+    D[:3, :3] = lam
+    D[0, 0] = D[1, 1] = D[2, 2] = lam + 2 * mu
+    D[3, 3] = D[4, 4] = D[5, 5] = mu
+    return D
 
 
 def strain_displacement(xi: float, eta: float, zeta: float, h: float = 1.0) -> np.ndarray:
@@ -76,21 +82,25 @@ def strain_displacement(xi: float, eta: float, zeta: float, h: float = 1.0) -> n
 
 @lru_cache(maxsize=16)
 def element_stiffness(nu: float = 0.3) -> np.ndarray:
-    """K_e (24x24) de un cubo de lado 1 y E = 1, integrada con Gauss 2x2x2.
+    """K_e (24x24) de un cubo de lado 1 y E = 1, ensamblada con **scikit-fem**.
+
+    La física sale de la librería: forma débil `skfem.models.elasticity.linear_elasticity`
+    con elementos trilineales `ElementHex1` e integración de Gauss exacta. Solo se
+    reordenan los nodos al orden de `NODE_OFFSETS` que usa nuestro ensamblador rápido.
+    (`tests/test_physics.py` comprueba que coincide con la K global de scikit-fem.)
 
     Para un vóxel de lado h y módulo E basta con escalar: K = E * h * K_e
     (B escala como 1/h y el volumen como h³ -> h³/h² = h).
     """
-    D = constitutive_matrix(1.0, nu)
-    g = 1 / np.sqrt(3)
-    KE = np.zeros((24, 24))
-    detJ = 0.5**3
-    for xi in (-g, g):
-        for eta in (-g, g):
-            for zeta in (-g, g):
-                B = strain_displacement(xi, eta, zeta, 1.0)
-                KE += B.T @ D @ B * detJ  # pesos de Gauss = 1
-    return KE
+    from skfem import Basis, ElementHex1, ElementVector, MeshHex, asm
+    from skfem.models.elasticity import lame_parameters, linear_elasticity
+
+    m = MeshHex()  # cubo unidad con un único elemento
+    basis = Basis(m, ElementVector(ElementHex1()), intorder=3)
+    K = asm(linear_elasticity(*lame_parameters(1.0, nu)), basis).toarray()
+    perm = [int(np.where((m.p.T == off).all(1))[0][0]) for off in NODE_OFFSETS]
+    dofs = np.array([basis.nodal_dofs[:, n] for n in perm]).ravel()
+    return K[np.ix_(dofs, dofs)]
 
 
 def rigid_body_modes_dofs(dofs: np.ndarray, nn_shape) -> np.ndarray:

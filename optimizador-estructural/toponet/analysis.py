@@ -171,7 +171,8 @@ def evaluate(
     checks.append({
         "name": "Resistencia",
         "ok": sf >= target_safety_factor,
-        "detail": f"FS = {sf:.2f} (límite {mat.yield_strength:g} MPa / σvm p99 {p99:.1f} MPa; objetivo ≥ {target_safety_factor})",
+        "detail": (f"FS ≈ {sf:.2f} (límite {mat.yield_strength:g} MPa / σvm p99 {p99:.1f} MPa; objetivo ≥ {target_safety_factor}). "
+                   "Estimación rápida por vóxeles: tiende a ser optimista; confírmalo con el análisis avanzado."),
     })
     checks.append({"name": "Solución FEM", "ok": bool(res.converged),
                    "detail": "convergida" if res.converged else "el solver no convergió (¿mecanismo?)"})

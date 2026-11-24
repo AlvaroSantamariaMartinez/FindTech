@@ -19,6 +19,27 @@ Variables de entorno opcionales:
 El visor 3D usa three.js desde un CDN (unpkg), así que el navegador necesita
 conexión a internet la primera vez (luego queda en caché).
 
+### El ejecutable
+
+`toponet_studio.py` es el punto de entrada único; con PyInstaller
+(`empaquetado/toponet_studio.spec`) se convierte en un programa sin dependencias:
+
+```
+TopoNetStudio                      # abre la app en el navegador
+TopoNetStudio servir --port 8080   # --host, --no-navegador
+TopoNetStudio autoprueba           # FEM, SIMP, malla, pandeo, fatiga, red y web
+TopoNetStudio generar-datos --n 800 --workers 4
+TopoNetStudio entrenar --epochs 80 --out checkpoints/mi_red.pt
+TopoNetStudio evaluar --ckpt checkpoints/mi_red.pt --n 40
+```
+
+Las carpetas `checkpoints/` y `plugins/` **junto al ejecutable** son tuyas: lo que
+pongas ahí aparece en la WebUI. El flujo de GitHub Actions
+`.github/workflows/toponet-ejecutables.yml` compila el programa para Windows, Linux y
+macOS (Apple Silicon), pasa los tests y la autoprueba, y publica cada uno como
+artefacto descargable. El ejecutable entrena en CPU; para GPU entrena desde el código
+con PyTorch para CUDA (los `.pt` son compatibles).
+
 ## 9.2 Flujo de trabajo
 
 1. **Pieza:** sube tu STL (también OBJ/PLY) o elige un ejemplo. Los ejemplos aplican
@@ -69,6 +90,9 @@ GET  /api/results/{rid}/mesh?threshold ◄─────────── marc
 GET  /api/results/{rid}/stl?threshold  ◄─────────── descarga
 GET  /api/results/{rid}/density.npz    ◄─────────── densidades crudas para tu post-proceso
 GET  /api/models  | POST /api/models/reload ◄────── catálogo de plugins (parámetros incluidos)
+POST /api/results/{rid}/advanced       ───────────► análisis avanzado (cap. 11), en cola propia
+GET  /api/advanced/{aid}               ◄─────────── progreso, métricas, comprobaciones y malla
+GET  /api/physics/info                 ◄─────────── malladores disponibles y fuentes de la física
 ```
 
 Decisiones de diseño:

@@ -86,6 +86,13 @@ de una impresora FDM ya puede tener problemas para hacerlo bien.
 
 ## 8.7 Limitaciones que debes conocer
 
+> Las comprobaciones de este capítulo son la **validación rápida por vóxeles**, la que
+> se aplica a todos los diseños al optimizar. Tiende a ser optimista en resistencia (ver
+> [cap. 11.1](11-fisica-realista.md)). Para decidir si una pieza aguanta usa el
+> **análisis avanzado** (cap. 11): geometría real, tetraedros cuadráticos, pandeo,
+> fatiga, peso propio y capas de impresión.
+
+
 Este proyecto es una herramienta de **diseño conceptual y aprendizaje**:
 
 1. **Modelo lineal elástico, estático, isótropo.** No contempla pandeo, fatiga,

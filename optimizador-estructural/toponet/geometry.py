@@ -145,22 +145,60 @@ def density_to_mesh(
     pitch: float,
     threshold: float = 0.5,
     smooth_iters: int = 10,
+    target_volume: Optional[float] = None,
 ) -> Optional[trimesh.Trimesh]:
-    """Isosuperficie `density == threshold` -> malla triangular cerrada."""
+    """Isosuperficie de un campo por elemento -> malla triangular cerrada.
+
+    Con `target_volume` (mm³) el nivel de la isosuperficie no es `threshold` sino el
+    que hace que la malla tenga ese volumen (bisección). Así el STL exportado contiene
+    exactamente la cantidad de material del diseño validado: sin esta corrección,
+    marching cubes adelgaza las barras finas (una barra de 1 vóxel queda con media
+    sección) y la pieza impresa sería mucho más débil de lo que dice el análisis.
+    """
     from skimage import measure
 
     d = np.pad(np.asarray(density, float), 1, mode="constant", constant_values=0.0)
-    if d.max() < threshold:
+    if d.max() <= 0 or (target_volume is None and d.max() < threshold):
         return None
-    level = float(np.clip(threshold, d.min() + 1e-6, d.max() - 1e-6))
-    verts, faces, _normals, _ = measure.marching_cubes(d, level=level)
-    # índice (con padding) -> coordenadas: el valor del elemento i vive en su centro
-    verts = np.asarray(origin) + pitch * (verts - 1 + 0.5)
-    mesh = trimesh.Trimesh(vertices=verts, faces=faces[:, ::-1], process=True)
-    if smooth_iters > 0 and len(mesh.faces) > 0:
-        trimesh.smoothing.filter_taubin(mesh, lamb=0.5, nu=-0.53, iterations=smooth_iters)
+
+    def extract(level):
+        verts, faces, _n, _v = measure.marching_cubes(d, level=level)
+        # índice (con padding) -> coordenadas: el valor del elemento i vive en su centro
+        verts = np.asarray(origin) + pitch * (verts - 1 + 0.5)
+        m = trimesh.Trimesh(vertices=verts, faces=faces[:, ::-1], process=True)
+        # el suavizado va DENTRO: en barras finas encoge la malla y el volumen debe medirse después
+        if smooth_iters > 0 and len(m.faces) > 0:
+            trimesh.smoothing.filter_taubin(m, lamb=0.5, nu=-0.53, iterations=smooth_iters)
+        return m
+
+    lo_lv, hi_lv = float(d.min()) + 1e-6, float(d.max()) - 1e-6
+    level = float(np.clip(threshold, lo_lv, hi_lv))
+    mesh = extract(level)
+    if target_volume is not None and target_volume > 0:
+        a, b = lo_lv, hi_lv  # el volumen decrece al subir el nivel
+        for _ in range(22):
+            level = 0.5 * (a + b)
+            mesh = extract(level)
+            vol = abs(mesh.volume)
+            if abs(vol / target_volume - 1) < 0.003:
+                break
+            if vol > target_volume:
+                a = level
+            else:
+                b = level
     trimesh.repair.fix_normals(mesh)
     return mesh
+
+
+def solid_to_mesh(solid: np.ndarray, origin: np.ndarray, pitch: float, smooth_sigma: float = 0.7,
+                  smooth_iters: int = 6) -> Optional[trimesh.Trimesh]:
+    """Malla suave y con el MISMO volumen que un diseño binario de vóxeles (el validado)."""
+    solid = np.asarray(solid, bool)
+    if not solid.any():
+        return None
+    field = ndimage.gaussian_filter(solid.astype(float), smooth_sigma, mode="constant")
+    return density_to_mesh(field, origin, pitch, smooth_iters=smooth_iters,
+                           target_volume=float(solid.sum()) * pitch**3)
 
 
 def mesh_to_stl_bytes(mesh: trimesh.Trimesh) -> bytes:

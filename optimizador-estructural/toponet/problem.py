@@ -28,23 +28,46 @@ import numpy as np
 
 @dataclass
 class Material:
-    """Material isótropo lineal elástico."""
+    """Material lineal elástico (isótropo, o transversalmente isótropo si se imprime).
+
+    Los campos de fatiga y anisotropía solo los usa el análisis avanzado
+    (`toponet/physics`). Todos los valores de `MATERIALS` son ORIENTATIVOS: para una
+    pieza real usa los de la ficha técnica de tu proveedor o, mejor, de ensayos.
+    """
 
     name: str = "PLA"
     E: float = 3500.0  # módulo de Young [MPa]
     nu: float = 0.35  # coeficiente de Poisson [-]
-    yield_strength: float = 50.0  # límite elástico / resistencia [MPa]
+    yield_strength: float = 50.0  # límite elástico [MPa]
     density: float = 1.24  # densidad [g/cm³]
+    ultimate_strength: float = 55.0  # resistencia a tracción [MPa] (corrección de Goodman)
+    fatigue_strength: float = 18.0  # amplitud de tensión resistida a `fatigue_cycles_ref` ciclos, R=-1 [MPa]
+    fatigue_cycles_ref: float = 1e6
+    fatigue_exponent: float = 10.0  # m de Basquin: S^m · N = cte
+    # Impresión 3D por capas (FDM): material transversalmente isótropo
+    layer_E_ratio: float = 0.85  # E perpendicular a las capas / E en el plano
+    interlayer_strength_ratio: float = 0.55  # resistencia entre capas / resistencia en el plano
+
+    @staticmethod
+    def from_dict(d: dict) -> "Material":
+        base = MATERIALS.get(d.get("name", ""), Material())
+        vals = {k: d.get(k, getattr(base, k)) for k in Material.__dataclass_fields__}
+        vals["name"] = str(vals["name"])
+        for k, v in vals.items():
+            if k != "name":
+                vals[k] = float(v)
+        return Material(**vals)
 
 
 MATERIALS = {
-    "PLA": Material("PLA", 3500.0, 0.35, 50.0, 1.24),
-    "PETG": Material("PETG", 2100.0, 0.38, 45.0, 1.27),
-    "ABS": Material("ABS", 2200.0, 0.35, 40.0, 1.05),
-    "Nylon PA12": Material("Nylon PA12", 1700.0, 0.39, 48.0, 1.01),
-    "Aluminio 6061-T6": Material("Aluminio 6061-T6", 69000.0, 0.33, 276.0, 2.70),
-    "Acero S235": Material("Acero S235", 210000.0, 0.30, 235.0, 7.85),
-    "Titanio Ti6Al4V": Material("Titanio Ti6Al4V", 114000.0, 0.34, 880.0, 4.43),
+    #                    nombre               E        nu    σy     ρ     Su     Sf    N_ref  m    Ez/E  capas
+    "PLA": Material("PLA", 3500.0, 0.35, 50.0, 1.24, 55.0, 18.0, 1e6, 10.0, 0.85, 0.55),
+    "PETG": Material("PETG", 2100.0, 0.38, 45.0, 1.27, 50.0, 14.0, 1e6, 10.0, 0.90, 0.60),
+    "ABS": Material("ABS", 2200.0, 0.35, 40.0, 1.05, 42.0, 12.0, 1e6, 10.0, 0.85, 0.50),
+    "Nylon PA12": Material("Nylon PA12", 1700.0, 0.39, 45.0, 1.01, 48.0, 18.0, 1e6, 12.0, 0.90, 0.60),
+    "Aluminio 6061-T6": Material("Aluminio 6061-T6", 69000.0, 0.33, 276.0, 2.70, 310.0, 96.5, 5e8, 12.0, 1.0, 1.0),
+    "Acero S235": Material("Acero S235", 210000.0, 0.30, 235.0, 7.85, 360.0, 180.0, 1e6, 10.0, 1.0, 1.0),
+    "Titanio Ti6Al4V": Material("Titanio Ti6Al4V", 114000.0, 0.34, 880.0, 4.43, 950.0, 510.0, 1e7, 12.0, 1.0, 1.0),
 }
 
 

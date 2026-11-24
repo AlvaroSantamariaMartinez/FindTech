@@ -5,6 +5,7 @@ import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 
 const $ = (id) => document.getElementById(id);
 const state = {
+  adv: new Map(),         // análisis avanzado por visor
   meshInfo: null,
   origGeom: null,         // BufferGeometry del STL original
   regions: [],            // apoyos y cargas
@@ -183,6 +184,8 @@ function globalScale(field) {
 
 function applyColors() {
   const mode = colorMode();
+  if (mode.startsWith('adv_')) return applyAdvColors(mode.slice(4));
+  for (const p of state.panels.values()) { if (p.advObject) p.advObject.visible = false; if (p.object) p.object.visible = true; }
   const legend = $('legend');
   let max = 1;
   if (mode !== 'solid') {
@@ -430,9 +433,17 @@ async function loadModels(reload = false) {
 }
 
 // ------------------------------------------------------------------ material
+const MAT_FIELDS = { matE: 'E', matNu: 'nu', matY: 'yield_strength', matRho: 'density', matSu: 'ultimate_strength',
+  matSf: 'fatigue_strength', matNref: 'fatigue_cycles_ref', matM: 'fatigue_exponent', matEz: 'layer_E_ratio',
+  matIL: 'interlayer_strength_ratio' };
 function setMaterial(name) {
   const m = state.materials[name]; if (!m) return;
-  $('matE').value = m.E; $('matNu').value = m.nu; $('matY').value = m.yield_strength; $('matRho').value = m.density;
+  for (const [id, k] of Object.entries(MAT_FIELDS)) $(id).value = m[k];
+}
+function materialPayload() {
+  const out = { name: $('materialSelect').value };
+  for (const [id, k] of Object.entries(MAT_FIELDS)) out[k] = +$(id).value;
+  return out;
 }
 
 // ------------------------------------------------------------------ ejecución
@@ -447,8 +458,7 @@ async function run() {
     resolution: +$('resolution').value,
     volfrac: +$('volfrac').value / 100,
     safety_target: +$('safety').value,
-    material: { name: $('materialSelect').value, E: +$('matE').value, nu: +$('matNu').value,
-                yield_strength: +$('matY').value, density: +$('matRho').value },
+    material: materialPayload(),
     regions: state.regions.map(({ _anchor, ...r }) => r),
     models,
   };
@@ -458,6 +468,8 @@ async function run() {
     // elimina visores de resultados anteriores
     for (const p of [...state.panels.values()]) if (p.key !== 'orig') p.dispose();
     state.job = { id: job_id, data: null };
+    state.adv = new Map();
+    $('advSection').hidden = true; $('advAllBtn').disabled = true;
     const orig = state.panels.get('orig');
     orig.origScalars = null;
     clearInterval(state.polling);
@@ -473,6 +485,12 @@ async function poll() {
   state.job.data = j;
   status(j.message || j.status);
   const orig = state.panels.get('orig');
+  if (j.reference && orig && !orig.refResultId) {
+    orig.refResultId = j.reference.result_id;
+    orig.el.querySelector('.pfoot').innerHTML = '<span class="muted">Arrastra para rotar · rueda: zoom</span><span class="spacer"></span>' +
+      '<button class="adv secondary" title="Física realista sobre el STL original">Análisis avanzado</button>';
+    orig.el.querySelector('.adv').onclick = () => runAdvanced(orig);
+  }
   if (j.reference && orig && !orig.origScalars) {
     const vm = b64(j.reference.vertex_von_mises, Float32Array);
     orig.origScalars = { von_mises: await mapOrigScalars(vm, j.reference.metrics) };
@@ -488,7 +506,9 @@ async function poll() {
       p.el.querySelector('.pfoot').innerHTML = `
         <label>Umbral <input type="range" min="0.1" max="0.9" step="0.05" value="0.5" class="thr"> <b class="thrv">0.50</b></label>
         <span class="spacer"></span>
+        <button class="adv secondary" disabled title="Física realista sobre la geometría real">Análisis avanzado</button>
         <a class="dl" href="#" download>Descargar STL</a>`;
+      p.el.querySelector('.adv').onclick = () => runAdvanced(p);
       const thr = p.el.querySelector('.thr');
       let tmo;
       thr.addEventListener('input', () => {
@@ -501,12 +521,14 @@ async function poll() {
     if (r.status === 'done' && !p.result) {
       p.result = r;
       await loadResultMesh(p, 0.5);
+      p.el.querySelector('.adv').disabled = false;
     }
   }
   renderComparison();
   if (j.status === 'done' || j.status === 'error') {
     clearInterval(state.polling);
     $('runBtn').disabled = false;
+    $('advAllBtn').disabled = false;
     if (j.status === 'error') toast(j.message, true, 8000);
     else status('Terminado');
   }
@@ -610,6 +632,163 @@ function renderComparison() {
 }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
+// ------------------------------------------------------------------ análisis avanzado
+function advSettings() {
+  return {
+    gravity: $('advGravity').checked, buckling: $('advBuckling').checked, fdm: $('advFdm').checked,
+    build_axis: $('advAxis').value, cycles: +$('advCycles').value || 0, load_ratio: +$('advR').value || 0,
+    n_modes: +$('advModes').value || 0, mesh_quality: $('advQuality').value,
+    target_sf: +$('safety').value, target_buckling: +$('advBuckTarget').value || 3,
+  };
+}
+
+async function runAdvanced(panel) {
+  const rid = panel.key === 'orig' ? panel.refResultId : panel.result?.result_id;
+  if (!rid) return toast('Primero optimiza para tener un diseño que analizar.', true);
+  const thr = +(panel.el.querySelector('.thr')?.value || 0.5);
+  const btn = panel.el.querySelector('.adv');
+  if (btn) btn.disabled = true;
+  try {
+    const { advanced_id } = await api(`/api/results/${rid}/advanced`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ settings: advSettings(), threshold: thr, material: materialPayload() }) });
+    const entry = { aid: advanced_id, panel, data: null, name: panel.key === 'orig' ? 'Original (macizo)' : panel.result.name };
+    state.adv.set(panel.key, entry);
+    $('advSection').hidden = false;
+    pollAdvanced(entry);
+  } catch (e) { toast(e.message, true); if (btn) btn.disabled = false; }
+}
+
+async function pollAdvanced(entry) {
+  let a;
+  try { a = await api(`/api/advanced/${entry.aid}`); } catch (e) { return toast(e.message, true); }
+  entry.data = a;
+  const btn = entry.panel.el.querySelector('.adv');
+  if (a.status === 'done' || a.status === 'error') {
+    if (btn) btn.disabled = false;
+    entry.panel.setMessage(a.status === 'done' ? `Avanzado: ${a.message}` : `Avanzado: ${a.message}`, a.status === 'error');
+    if (a.status === 'done') buildAdvObject(entry);
+    if (a.status === 'error') toast('Análisis avanzado: ' + a.message, true, 8000);
+    renderAdvComparison();
+    if (colorMode().startsWith('adv_')) applyColors();
+    return;
+  }
+  entry.panel.setMessage(`Avanzado ${Math.round(100 * a.progress)} %: ${a.message}`);
+  renderAdvComparison();
+  setTimeout(() => pollAdvanced(entry), 1000);
+}
+
+function buildAdvObject(entry) {
+  const p = entry.panel, m = entry.data.mesh;
+  if (!m || m.empty) return;
+  if (p.advObject) { p.scene.remove(p.advObject); p.advObject.geometry.dispose(); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(b64(m.positions, Float32Array), 3));
+  g.setIndex(new THREE.BufferAttribute(b64(m.indices, Uint32Array), 1));
+  g.computeVertexNormals();
+  p.advObject = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.55 }));
+  p.advScalars = m.scalars;
+  p.advObject.visible = false;
+  p.scene.add(p.advObject);
+}
+
+function applyAdvColors(field) {
+  let max = 0;
+  for (const p of state.panels.values()) {
+    const s = p.advScalars?.[field];
+    if (s) max = Math.max(max, field === 'von_mises' ? s.p99 : s.max);
+  }
+  max = max || 1;
+  $('legend').hidden = false;
+  $('legendMin').textContent = '0';
+  $('legendMax').textContent = field === 'von_mises' ? `${fmt(max, 1)} MPa` : `${fmt(max, 3)} mm`;
+  for (const p of state.panels.values()) {
+    const s = p.advScalars?.[field];
+    if (!p.advObject || !s) {  // sin análisis avanzado: se ve el diseño normal, en gris
+      if (p.advObject) p.advObject.visible = false;
+      if (p.object) {
+        p.object.visible = true; p.object.material.vertexColors = false;
+        p.object.material.color.set(p.key === 'orig' ? COLORS.orig : COLORS.solid); p.object.material.needsUpdate = true;
+      }
+      continue;
+    }
+    if (p.object) p.object.visible = false;
+    p.advObject.visible = true;
+    const data = s.arr || (s.arr = b64(s.data, Float32Array));
+    const col = new Float32Array(data.length * 3);
+    for (let i = 0; i < data.length; i++) { const c = turbo(data[i] / max); col[3 * i] = c[0]; col[3 * i + 1] = c[1]; col[3 * i + 2] = c[2]; }
+    p.advObject.geometry.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    p.advObject.material.needsUpdate = true;
+  }
+}
+
+const ADV_ROWS = [
+  ['section', 'Resistencia'],
+  ['safety_factor', 'Factor de seguridad (fuera de apoyos/cargas)', 2, 'max'],
+  ['safety_factor_incl_contacts', 'FS incluyendo zonas de apoyo/carga', 2, 'max'],
+  ['max_von_mises_design_MPa', 'σ von Mises máx. de diseño (MPa)', 1, 'min'],
+  ['max_principal_MPa', 'σ principal máx. (MPa)', 1, 'min'],
+  ['interlayer_safety_factor', 'FS adhesión entre capas', 2, 'max'],
+  ['section', 'Fatiga'],
+  ['fatigue_safety_factor', 'FS a fatiga', 2, 'max'],
+  ['fatigue_life_cycles', 'Vida estimada (ciclos)', 0, 'max'],
+  ['section', 'Estabilidad y dinámica'],
+  ['buckling_load_factor', 'Factor de carga de pandeo λ', 1, 'max'],
+  ['freq_1_Hz', '1.ª frecuencia natural (Hz)', 0, 'max'],
+  ['freq_2_Hz', '2.ª frecuencia natural (Hz)', 0, null],
+  ['freq_3_Hz', '3.ª frecuencia natural (Hz)', 0, null],
+  ['section', 'Rigidez y masa'],
+  ['max_displacement_mm', 'Desplazamiento máx. (mm)', 4, 'min'],
+  ['compliance_Nmm', 'Flexibilidad F·u (N·mm)', 3, 'min'],
+  ['mass_g', 'Masa real (g)', 1, 'min'],
+  ['weight_N', 'Peso (N)', 3, null],
+  ['section', 'Modelo numérico'],
+  ['tet_elements', 'Tetraedros', 0, null],
+  ['dofs', 'Grados de libertad', 0, null],
+  ['element_size_mm', 'Tamaño de elemento (mm)', 2, null],
+  ['equilibrium_error', 'Error de equilibrio', 1, null, null, true],
+  ['analysis_time_s', 'Tiempo de análisis (s)', 1, 'min'],
+];
+
+function renderAdvComparison() {
+  const cols = [...state.adv.values()];
+  if (!cols.length) return;
+  let html = '<table><thead><tr><th>Métrica</th>' + cols.map((c) => `<th>${escapeHtml(c.name)}</th>`).join('') + '</tr></thead><tbody>';
+  html += '<tr><td>Estado</td>' + cols.map((c) => {
+    const d = c.data;
+    if (!d) return '<td>en cola…</td>';
+    if (d.status === 'done') return '<td><span class="ok">listo</span></td>';
+    if (d.status === 'error') return `<td><span class="bad" title="${escapeHtml(d.message)}">error</span></td>`;
+    return `<td>${Math.round(100 * d.progress)} %</td>`;
+  }).join('') + '</tr>';
+  for (const row of ADV_ROWS) {
+    if (row[0] === 'section') { html += `<tr class="section"><td colspan="${cols.length + 1}">${row[1]}</td></tr>`; continue; }
+    const [k, label, dec, better, , sci] = row;
+    const vals = cols.map((c) => { const v = c.data?.metrics?.[k]; return v === undefined ? undefined : v; });
+    if (vals.every((v) => v === undefined)) continue;
+    let best = null;
+    if (better) {
+      const cand = vals.filter((v) => typeof v === 'number');
+      if (cand.length > 1) best = better === 'min' ? Math.min(...cand) : Math.max(...cand);
+    }
+    html += `<tr><td>${label}</td>` + vals.map((v) => {
+      if (v === undefined) return '<td>—</td>';
+      if (v === null) return '<td>∞</td>';  // p. ej. sin pandeo
+      const txt = sci ? Number(v).toExponential(1) : (k === 'fatigue_life_cycles' ? Number(v).toExponential(2) : fmt(v, dec));
+      return `<td class="${v === best ? 'best' : ''}">${txt}</td>`;
+    }).join('') + '</tr>';
+  }
+  html += '<tr><td>Comprobaciones</td>' + cols.map((c) => {
+    const ch = c.data?.checks;
+    if (!ch) return '<td>…</td>';
+    return '<td class="checks">' + ch.map((x) => `<span class="${x.ok ? 'ok' : 'bad'}" title="${escapeHtml(x.name + ': ' + x.detail)}">${x.ok ? '✔' : '✘'}</span>`).join('') + '</td>';
+  }).join('') + '</tr>';
+  html += '</tbody></table><p class="muted small">El factor de seguridad de diseño excluye las zonas donde se aplican apoyos y cargas ' +
+    '(principio de Saint-Venant: allí la tensión de un modelo con cargas idealizadas no es representativa); se muestra también el valor incluyéndolas. ' +
+    'Pasa el ratón por ✔/✘ para ver el detalle de cada comprobación.</p>';
+  $('advComparison').innerHTML = html;
+}
+
 // ------------------------------------------------------------------ eventos
 async function init() {
   animate();
@@ -645,6 +824,16 @@ async function init() {
   $('reloadModels').onclick = () => loadModels(true).then(() => toast('Modelos recargados'));
   $('runBtn').onclick = run;
   $('colorMode').onchange = applyColors;
+  $('advAllBtn').onclick = () => {
+    const orig = state.panels.get('orig');
+    if (orig?.refResultId) runAdvanced(orig);
+    for (const p of state.panels.values()) if (p.result?.result_id) runAdvanced(p);
+  };
+  try {
+    const info = await api('/api/physics/info');
+    $('physicsSources').innerHTML = info.sources.map((x) => `<li>${escapeHtml(x.what)}: <a href="${x.url}" target="_blank" rel="noopener">${escapeHtml(x.source)}</a></li>`).join('') +
+      `<li>Malladores disponibles: ${escapeHtml(info.meshers.join(', ') || 'ninguno')}</li>`;
+  } catch { /* */ }
   $('ghostToggle').onchange = () => { for (const p of state.panels.values()) if (p.ghost) p.ghost.visible = $('ghostToggle').checked; };
   $('markersToggle').onchange = refreshMarkers;
   addEventListener('keydown', (e) => { if (e.key === 'Escape') setPickMode(null); });

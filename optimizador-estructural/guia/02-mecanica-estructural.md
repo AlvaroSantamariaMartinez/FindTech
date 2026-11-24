@@ -178,6 +178,12 @@ reales en la validación.
 
 ## 2.9 Qué NO cubre este modelo (y conviene saber)
 
+> El **análisis avanzado** del [capítulo 11](11-fisica-realista.md) cubre el pandeo, la
+> fatiga, la anisotropía de la impresión 3D, el peso propio y las frecuencias naturales
+> sobre la geometría real. La tabla siguiente describe el modelo rápido de vóxeles que
+> usa el optimizador.
+
+
 | Fenómeno | Por qué importa | Qué hacer |
 |----------|-----------------|-----------|
 | **Pandeo** | Barras esbeltas en compresión fallan muy por debajo de $\sigma_y$ | Evitar barras muy finas comprimidas; análisis de pandeo lineal |

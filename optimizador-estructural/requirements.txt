@@ -6,6 +6,12 @@ scikit-image>=0.21
 fastapi>=0.110
 uvicorn>=0.27
 python-multipart>=0.0.9
+# Física realista (análisis avanzado)
+scikit-fem>=10.0          # elementos finitos (elasticidad P2, modos, pandeo)
+pytetwild>=0.4            # mallador de tetraedros fTetWild (robusto)
+gmsh>=4.11                # mallador de respaldo (en Linux necesita libglu1-mesa)
+fatpack>=0.7              # fatiga: curvas S-N y corrección de Goodman
+fast-simplification>=0.1  # simplificación de superficies
 # PyTorch (para la red neuronal). Elige la variante de tu hardware en https://pytorch.org
 # Solo CPU:  pip install torch --index-url https://download.pytorch.org/whl/cpu
 torch>=2.1

@@ -19,15 +19,28 @@ import threading
 
 from ..plugins import OptimizerPlugin, Param, register
 
-CKPT_DIR = os.environ.get(
-    "TOPONET_CHECKPOINTS",
-    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "checkpoints"),
-)
+def _ckpt_dirs():
+    from ..paths import search_dirs
+
+    env = os.environ.get("TOPONET_CHECKPOINTS")
+    return ([env] if env else []) + search_dirs("checkpoints")
+
+
+CKPT_DIR = _ckpt_dirs()[0]
+
+
+def _checkpoint_paths():
+    """{nombre: ruta}. Los checkpoints del usuario tienen prioridad sobre el incluido."""
+    out = {}
+    for d in reversed(_ckpt_dirs()):
+        for f in sorted(glob.glob(os.path.join(d, "*.pt"))):
+            if not f.endswith("_state.pt"):
+                out[os.path.basename(f)] = f
+    return out
 
 
 def _checkpoints():
-    files = sorted(glob.glob(os.path.join(CKPT_DIR, "*.pt")))
-    return [os.path.basename(f) for f in files if not f.endswith("_state.pt")]
+    return sorted(_checkpoint_paths())
 
 
 @register
@@ -69,7 +82,7 @@ class NeuralUNet(OptimizerPlugin):
     def _model(self, name):
         from ..nn.model import load_checkpoint
 
-        path = os.path.join(CKPT_DIR, name)
+        path = _checkpoint_paths()[name]
         mtime = os.path.getmtime(path)
         with self._lock:
             hit = self._cache.get(name)
