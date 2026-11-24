@@ -91,8 +91,10 @@ def _selftest(_argv):
 
     def meshing():
         from toponet.physics.tetmesh import available_meshers, tetrahedralize
+        meshers = available_meshers()
+        assert "fTetWild" in meshers, f"fTetWild no se pudo cargar (disponibles: {meshers})"
         p, t = tetrahedralize(trimesh.creation.box(extents=(100, 10, 10)), size=10)
-        return f"{t.shape[1]} tetraedros con {available_meshers()}"
+        return f"{t.shape[1]} tetraedros con {meshers}"
 
     def buckling():
         from toponet.physics.advanced import AdvancedSettings, _FEModel
@@ -153,8 +155,18 @@ def _selftest(_argv):
     return 0 if ok else 1
 
 
+def _utf8_console():
+    """La consola de Windows usa cp1252 por defecto: sin esto, imprimir "λ" o "σ" falla."""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+
 def main(argv=None):
     multiprocessing.freeze_support()  # necesario para generar datos en paralelo desde el ejecutable
+    _utf8_console()
     argv = list(sys.argv[1:] if argv is None else argv)
     if argv and argv[0] in ("-h", "--help"):
         print(__doc__)

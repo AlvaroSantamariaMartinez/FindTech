@@ -27,6 +27,10 @@ if spec and spec.submodule_search_locations:
     for f in glob.glob(os.path.join(spec.submodule_search_locations[0], "PyfTetWildWrapper*")):
         if f.endswith((".so", ".pyd")):
             binaries.append((f, "pytetwild"))
+    # DLLs auxiliares de la rueda de Windows (delvewheel) y librerías de la de Linux (auditwheel)
+    libs = os.path.join(os.path.dirname(spec.submodule_search_locations[0]), "pytetwild.libs")
+    for f in glob.glob(os.path.join(libs, "*")):
+        binaries.append((f, "pytetwild.libs"))
 # gmsh (respaldo del mallador): gmsh.py busca la librería junto a sí mismo
 try:
     import gmsh  # noqa: E402

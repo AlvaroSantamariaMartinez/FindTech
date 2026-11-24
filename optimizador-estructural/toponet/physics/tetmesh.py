@@ -24,6 +24,7 @@ import trimesh
 
 _LOCK = threading.Lock()  # gmsh y fTetWild usan estado global: un mallado a la vez
 _FTW = None
+_DLL_HANDLES: list = []  # mantener vivas las rutas de DLL añadidas en Windows
 
 
 def _load_ftetwild():
@@ -46,6 +47,14 @@ def _load_ftetwild():
     if base:
         dirs.append(os.path.join(base, "pytetwild"))
     for d in dirs:
+        # En Windows la rueda trae DLLs (MPIR, runtime de MSVC) en "pytetwild.libs" que el
+        # __init__ del paquete registra (parche de delvewheel); como no lo ejecutamos, se hace aquí.
+        libs = os.path.abspath(os.path.join(d, os.pardir, "pytetwild.libs"))
+        if os.name == "nt" and os.path.isdir(libs):
+            try:
+                _DLL_HANDLES.append(os.add_dll_directory(libs))
+            except OSError:
+                pass
         for path in glob.glob(os.path.join(d, "PyfTetWildWrapper*")):
             if not path.endswith((".so", ".pyd")):
                 continue

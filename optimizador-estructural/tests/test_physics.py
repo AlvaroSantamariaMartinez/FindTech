@@ -137,3 +137,14 @@ def test_full_analysis_runs_on_example():
     assert {"Equilibrio", "Resistencia estática", "Adhesión entre capas", "Fatiga", "Pandeo"} <= names
     assert r.metrics["equilibrium_error"] < 1e-6
     assert len(r.surface_faces) > 0 and len(r.surface_fields["von_mises"]) == len(r.surface_vertices)
+
+
+def test_ftetwild_loads_when_installed():
+    """El núcleo de fTetWild debe cargarse sin PyVista (en Windows, con sus DLL de pytetwild.libs)."""
+    import importlib.util
+
+    from toponet.physics.tetmesh import available_meshers
+
+    if importlib.util.find_spec("pytetwild") is None:
+        pytest.skip("pytetwild no instalado")
+    assert "fTetWild" in available_meshers()
